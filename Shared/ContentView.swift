@@ -24,6 +24,7 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     typealias Sort = TablerSort<Fruit>
+    typealias Context = TablerContext<Fruit>
     
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.name, order: .forward)],
@@ -37,12 +38,12 @@ struct ContentView: View {
     ]
     
     @ViewBuilder
-    private func header(_ ctx: TablerSortContext<Fruit>) -> some View {
-        Text("ID \(Sort.indicator(ctx, \.id))")
+    private func header(_ ctx: Binding<Context>) -> some View {
+        Sort.columnTitle("ID", ctx, \.id)
             .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
-        Text("Name \(Sort.indicator(ctx, \.name))")
+        Sort.columnTitle("Name", ctx, \.name)
             .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
-        Text("Weight \(Sort.indicator(ctx, \.weight))")
+        Sort.columnTitle("Weight", ctx, \.weight)
             .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
     }
     

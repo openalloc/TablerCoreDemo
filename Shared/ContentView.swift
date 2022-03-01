@@ -19,6 +19,7 @@
 import SwiftUI
 import CoreData
 import Tabler
+import Detailer
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -26,6 +27,11 @@ struct ContentView: View {
     typealias Sort = TablerSort<Fruit>
     typealias Context = TablerContext<Fruit>
     
+    private let title = "Tabler/Detailer Core Data Demo"
+    
+    @State private var toEdit: Fruit? = nil
+    @State private var isAdd: Bool = false
+
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.name, order: .forward)],
         animation: .default)
@@ -37,6 +43,64 @@ struct ContentView: View {
         GridItem(.flexible(minimum: 40, maximum: 80), alignment: .trailing),
     ]
     
+    private var listConfig: TablerListConfig<Fruit> {
+        TablerListConfig<Fruit>(gridItems: gridItems)
+    }
+    
+    private var detailerConfig: DetailerConfig<Fruit> {
+        DetailerConfig<Fruit>(
+            onDelete: deleteAction,
+            onSave: saveAction,
+            onCancel: cancelAction,
+            titler: { _ in title })
+    }
+
+    // MARK: - Views
+    
+    var body: some View {
+        Group {
+#if os(macOS)
+            theContent
+#elseif os(iOS)
+            NavigationView {
+                theContent
+                    .navigationTitle(title)
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+#endif
+        }
+    }
+    
+    private var theContent: some View {
+        TablerList(listConfig,
+                   headerContent: header,
+                   rowContent: row,
+                   results: fruits)
+            .editDetailer(detailerConfig,
+                          toEdit: $toEdit,
+                          isAdd: $isAdd,
+                          detailContent: editDetail)
+            .toolbar {
+                ToolbarItemGroup {
+                    Button(action: {
+                        FruitBase.loadSampleData(viewContext)
+                    }) { Text("Load Sample Data") }
+                    Button(action: {
+                        clearAction()
+                    }) { Text("Clear") }
+                }
+                ToolbarItemGroup {
+                    addButton
+                }
+            }
+    }
+
+    private var addButton: some View {
+        Button(action: addAction) {
+            Label("Add Item", systemImage: "plus")
+        }
+    }
+
     @ViewBuilder
     private func header(_ ctx: Binding<Context>) -> some View {
         Sort.columnTitle("ID", ctx, \.id)
@@ -50,42 +114,71 @@ struct ContentView: View {
     @ViewBuilder
     private func row(_ element: Fruit) -> some View {
         Text(element.id ?? "")
+//            .modifier(menu(element))
         Text(element.name ?? "")
+//            .modifier(menu(element))
         Text(String(format: "%.0f g", element.weight))
+//            .modifier(menu(element))
     }
     
-    private var listConfig: TablerListConfig<Fruit> {
-        TablerListConfig<Fruit>(gridItems: gridItems)
-    }
-    
-    var body: some View {
-#if os(macOS)
-        theContent
-#elseif os(iOS)
-        NavigationView {
-            theContent
+    private func editDetail(ctx: DetailerContext<Fruit>, element: Binding<Fruit>) -> some View {
+        Form {
+            TextField("ID", text: Binding(element.id, replacingNilWith: ""))
+                .validate(ctx, element, \.id) { ($0?.count ?? 0) > 0 }
+            TextField("Name", text: Binding(element.name, replacingNilWith: ""))
+                .validate(ctx, element, \.name) { ($0?.count ?? 0) > 0 }
+            TextField("Weight", value: element.weight, formatter: NumberFormatter())
+                .validate(ctx, element, \.weight) { $0 > 0 }
+            TextField("Color", text: Binding(element.color, replacingNilWith: "gray"))
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+    }
+    
+    // MARK: - Menus
+    
+#if os(macOS)
+    private func menu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
+        EditDetailerContextMenu(detailerConfig, $toEdit, fruit)
+    }
+#elseif os(iOS)
+    private func menu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
+        EditDetailerSwipeMenu(detailerConfig, $toEdit, fruit)
+    }
 #endif
+    
+    // MARK: - Action Handlers
+    
+    private func addAction() {
+        isAdd = true                // NOTE cleared on dismissal of detail sheet
+        toEdit = Fruit(context: viewContext)
     }
     
-    private var theContent: some View {
-        TablerList(listConfig,
-                   headerContent: header,
-                   rowContent: row,
-                   results: fruits)
-            .toolbar {
-                ToolbarItemGroup {
-                    Button(action: {
-                        FruitBase.loadSampleData(viewContext)
-                    }) { Text("Load Sample Data") }
-                    Button(action: {
-                        clearAction()
-                    }) { Text("Clear") }
-                }
-            }
+    private func cancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+        viewContext.rollback()
     }
     
+    private func saveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+        do {
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+    
+    private func deleteAction(_ id: Fruit.ID) {
+        guard let _id = id else { return }
+        do {
+            let fetchRequest = NSFetchRequest<Fruit>.init(entityName: "Fruit")
+            fetchRequest.predicate = NSPredicate(format: "id == %@", _id)
+            let results = try viewContext.fetch(fetchRequest)
+            results.forEach { viewContext.delete($0) }
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+
     private func clearAction() {
         do {
             fruits.forEach { viewContext.delete($0) }
@@ -96,13 +189,6 @@ struct ContentView: View {
         }
     }
 }
-
-private let fruitFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

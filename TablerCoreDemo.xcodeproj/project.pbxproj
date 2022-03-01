@@ -20,6 +20,10 @@
 		40152D4327CC6E0800776E96 /* Tabler in Frameworks */ = {isa = PBXBuildFile; productRef = 40152D4227CC6E0800776E96 /* Tabler */; };
 		40152D4527CC6ED900776E96 /* FruitBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40152D4427CC6ED900776E96 /* FruitBase.swift */; };
 		40152D4627CC6ED900776E96 /* FruitBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40152D4427CC6ED900776E96 /* FruitBase.swift */; };
+		402DF71127CDD2CC007082FD /* Detailer in Frameworks */ = {isa = PBXBuildFile; productRef = 402DF71027CDD2CC007082FD /* Detailer */; };
+		402DF71327CDD2D4007082FD /* Detailer in Frameworks */ = {isa = PBXBuildFile; productRef = 402DF71227CDD2D4007082FD /* Detailer */; };
+		402DF71527CDE0D3007082FD /* Binding-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DF71427CDE0D3007082FD /* Binding-extension.swift */; };
+		402DF71627CDE0D3007082FD /* Binding-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DF71427CDE0D3007082FD /* Binding-extension.swift */; };
 		409D654D27CCBBEF00DAE06A /* Tabler in Frameworks */ = {isa = PBXBuildFile; productRef = 409D654C27CCBBEF00DAE06A /* Tabler */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +38,7 @@
 		40152D2C27CC6DE100776E96 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
 		40152D4427CC6ED900776E96 /* FruitBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FruitBase.swift; sourceTree = "<group>"; };
 		40152D4A27CCBA1E00776E96 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		402DF71427CDE0D3007082FD /* Binding-extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Binding-extension.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				402DF71327CDD2D4007082FD /* Detailer in Frameworks */,
 				409D654D27CCBBEF00DAE06A /* Tabler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				402DF71127CDD2CC007082FD /* Detailer in Frameworks */,
 				40152D4327CC6E0800776E96 /* Tabler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -76,6 +83,7 @@
 				40152D4427CC6ED900776E96 /* FruitBase.swift */,
 				40152D1F27CC6DE100776E96 /* Assets.xcassets */,
 				40152D1A27CC6DE000776E96 /* TablerCoreDemo.xcdatamodeld */,
+				402DF71427CDE0D3007082FD /* Binding-extension.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -122,6 +130,7 @@
 			name = "TablerCoreDemo (iOS)";
 			packageProductDependencies = (
 				409D654C27CCBBEF00DAE06A /* Tabler */,
+				402DF71227CDD2D4007082FD /* Detailer */,
 			);
 			productName = "TablerCoreDemo (iOS)";
 			productReference = 40152D2427CC6DE100776E96 /* TablerCoreDemo.app */;
@@ -142,6 +151,7 @@
 			name = "TablerCoreDemo (macOS)";
 			packageProductDependencies = (
 				40152D4227CC6E0800776E96 /* Tabler */,
+				402DF71027CDD2CC007082FD /* Detailer */,
 			);
 			productName = "TablerCoreDemo (macOS)";
 			productReference = 40152D2A27CC6DE100776E96 /* TablerCoreDemo.app */;
@@ -211,6 +221,7 @@
 				40152D4527CC6ED900776E96 /* FruitBase.swift in Sources */,
 				40152D2D27CC6DE100776E96 /* TablerCoreDemo.xcdatamodeld in Sources */,
 				40152D3327CC6DE100776E96 /* Persistence.swift in Sources */,
+				402DF71527CDE0D3007082FD /* Binding-extension.swift in Sources */,
 				40152D2F27CC6DE100776E96 /* TablerCoreDemoApp.swift in Sources */,
 				40152D3127CC6DE100776E96 /* ContentView.swift in Sources */,
 			);
@@ -223,6 +234,7 @@
 				40152D4627CC6ED900776E96 /* FruitBase.swift in Sources */,
 				40152D2E27CC6DE100776E96 /* TablerCoreDemo.xcdatamodeld in Sources */,
 				40152D3427CC6DE100776E96 /* Persistence.swift in Sources */,
+				402DF71627CDE0D3007082FD /* Binding-extension.swift in Sources */,
 				40152D3027CC6DE100776E96 /* TablerCoreDemoApp.swift in Sources */,
 				40152D3227CC6DE100776E96 /* ContentView.swift in Sources */,
 			);
@@ -495,6 +507,14 @@
 		40152D4227CC6E0800776E96 /* Tabler */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Tabler;
+		};
+		402DF71027CDD2CC007082FD /* Detailer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Detailer;
+		};
+		402DF71227CDD2D4007082FD /* Detailer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Detailer;
 		};
 		409D654C27CCBBEF00DAE06A /* Tabler */ = {
 			isa = XCSwiftPackageProductDependency;

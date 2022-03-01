@@ -127,11 +127,9 @@ struct ContentView: View {
     @ViewBuilder
     private func row(_ element: Fruit) -> some View {
         Text(element.id ?? "")
-//            .modifier(menu(element))
+            .modifier(menu(element))
         Text(element.name ?? "")
-//            .modifier(menu(element))
         Text(String(format: "%.0f g", element.weight))
-//            .modifier(menu(element))
     }
     
     private func editDetail(ctx: DetailerContext<Fruit>, element: Binding<Fruit>) -> some View {
@@ -160,18 +158,17 @@ struct ContentView: View {
     
     // MARK: - Helpers
     
-    private func get(for id: Fruit.ID?) -> Fruit? {
-        guard let _id = id else { return nil }
+    private func get(for id: Fruit.ID?) -> [Fruit] {
+        guard let _id = id else { return [] }
         do {
             let fetchRequest = NSFetchRequest<Fruit>.init(entityName: "Fruit")
             fetchRequest.predicate = NSPredicate(format: "id == %@", _id!)
-            let results = try viewContext.fetch(fetchRequest)
-            return results.first
+            return try viewContext.fetch(fetchRequest)
         } catch {
             let nsError = error as NSError
             print("Unresolved error \(nsError), \(nsError.userInfo)")
         }
-        return nil
+        return []
     }
     
     // MARK: - Action Handlers
@@ -182,7 +179,7 @@ struct ContentView: View {
     }
     
     private func editAction(_ id: Fruit.ID?) {
-        guard let _fruit = get(for: id) else { return }
+        guard let _fruit = get(for: id).first else { return }
         isAdd = false
         toEdit = _fruit
     }
@@ -201,9 +198,10 @@ struct ContentView: View {
     }
     
     private func deleteAction(_ id: Fruit.ID) {
-        guard let _fruit = get(for: id) else { return }
+        let _fruit = get(for: id)
+        guard _fruit.count > 0 else { return }
         do {
-            viewContext.delete(_fruit)
+            _fruit.forEach { viewContext.delete($0) }
             try viewContext.save()
         } catch {
             let nsError = error as NSError

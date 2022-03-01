@@ -16,6 +16,8 @@
 // limitations under the License.
 //
 
+//TODO use a nested viewContext to target rollback to the changes made by detailer.
+
 import SwiftUI
 import CoreData
 import Tabler
@@ -23,6 +25,11 @@ import Detailer
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    
+    enum Tabs {
+        case unbound
+        case bound
+    }
     
     typealias Sort = TablerSort<Fruit>
     typealias Context = TablerContext<Fruit>
@@ -32,7 +39,8 @@ struct ContentView: View {
     @State private var selected: Fruit.ID? = nil
     @State private var toEdit: Fruit? = nil
     @State private var isAdd: Bool = false
-
+    @State private var tab: Tabs = .unbound
+    
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.name, order: .forward)],
         animation: .default)
@@ -56,16 +64,16 @@ struct ContentView: View {
             onCancel: cancelAction,
             titler: { _ in title })
     }
-
+    
     // MARK: - Views
     
     var body: some View {
         Group {
 #if os(macOS)
-            theContent
+            tabView
 #elseif os(iOS)
             NavigationView {
-                theContent
+                tabView
                     .navigationTitle(title)
             }
             .navigationViewStyle(StackNavigationViewStyle())
@@ -73,32 +81,50 @@ struct ContentView: View {
         }
     }
     
-    private var theContent: some View {
+    private var tabView: some View {
+        TabView(selection: $tab) {
+            unboundView
+                .tabItem { Text("Unbound") }
+                .tag(Tabs.unbound)
+            boundView
+                .tabItem { Text("Bound (Observable Object)") }
+                .tag(Tabs.bound)
+        }
+//        .editDetailer(detailerConfig,
+//                      toEdit: $toEdit,
+//                      isAdd: $isAdd,
+//                      detailContent: editDetail)
+        .toolbar {
+            ToolbarItemGroup {
+                Button(action: {
+                    FruitBase.loadSampleData(viewContext)
+                }) { Text("Load Sample Data") }
+                Button(action: {
+                    clearAction()
+                }) { Text("Clear") }
+            }
+            ToolbarItemGroup {
+#if os(macOS)
+                editButton
+#endif
+                addButton
+            }
+        }
+    }
+    
+    private var unboundView: some View {
         TablerList1(listConfig,
                     headerContent: header,
                     rowContent: row,
                     results: fruits,
                     selected: $selected)
-            .editDetailer(detailerConfig,
-                          toEdit: $toEdit,
-                          isAdd: $isAdd,
-                          detailContent: editDetail)
-            .toolbar {
-                ToolbarItemGroup {
-                    Button(action: {
-                        FruitBase.loadSampleData(viewContext)
-                    }) { Text("Load Sample Data") }
-                    Button(action: {
-                        clearAction()
-                    }) { Text("Clear") }
-                }
-                ToolbarItemGroup {
-#if os(macOS)
-                    editButton
-#endif
-                    addButton
-                }
-            }
+    }
+    
+    private var boundView: some View {
+        TablerListO(listConfig,
+                    headerContent: header,
+                    rowContent: brow,
+                    results: fruits)
     }
     
     private var editButton: some View {
@@ -107,13 +133,13 @@ struct ContentView: View {
         }
         .disabled(selected == nil)
     }
-
+    
     private var addButton: some View {
         Button(action: addAction) {
             Label("Add Item", systemImage: "plus")
         }
     }
-
+    
     @ViewBuilder
     private func header(_ ctx: Binding<Context>) -> some View {
         Sort.columnTitle("ID", ctx, \.id)
@@ -132,6 +158,39 @@ struct ContentView: View {
         Text(String(format: "%.0f g", element.weight))
     }
     
+    // BOUND value row (with direct editing)
+    @ViewBuilder
+    private func brow(_ element: ObservedObject<Fruit>.Wrapper) -> some View {
+        Text(element.id.wrappedValue ?? "")
+//        Text(element.name ?? "")
+        TextField("Name", text: Binding(element.name, replacingNilWith: ""))
+            .textFieldStyle(.roundedBorder)
+            .border(Color.secondary)
+//        TextField("Weight", value: element.weight, formatter: NumberFormatter())
+//            .textFieldStyle(.roundedBorder)
+//            .border(Color.secondary)
+        Text(String(format: "%.0f g", element.weight.wrappedValue))
+    }
+    
+    /**
+     TODO should detailer be using an @ObservedObject?
+     
+     struct EditView : View {
+         @ObservedObject var book: Book
+         
+         init(book: Book) {
+             self.book = book
+         }
+         
+         var body : some View {
+             TextField("Name", text: $book.bookName)
+         }
+     }
+     
+     
+     @ObservedObject var thing: Thing
+     TextField("name", text: $thing.localName)
+     */
     private func editDetail(ctx: DetailerContext<Fruit>, element: Binding<Fruit>) -> some View {
         Form {
             TextField("ID", text: Binding(element.id, replacingNilWith: ""))
@@ -183,7 +242,7 @@ struct ContentView: View {
         isAdd = false
         toEdit = _fruit
     }
-
+    
     private func cancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
         viewContext.rollback()
     }
@@ -208,7 +267,7 @@ struct ContentView: View {
             print("Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-
+    
     private func clearAction() {
         do {
             fruits.forEach { viewContext.delete($0) }

@@ -164,14 +164,13 @@ struct ContentView: View {
     @ViewBuilder
     private func brow(_ element: ProjectedValue<Fruit>) -> some View {
         Text(element.id.wrappedValue ?? "")
-//        Text(element.name ?? "")
         TextField("Name", text: Binding(element.name, replacingNilWith: ""))
             .textFieldStyle(.roundedBorder)
             .border(Color.secondary)
-//        TextField("Weight", value: element.weight, formatter: NumberFormatter())
-//            .textFieldStyle(.roundedBorder)
-//            .border(Color.secondary)
-        Text(String(format: "%.0f g", element.weight.wrappedValue))
+        TextField("Weight", value: element.weight, formatter: NumberFormatter())
+            .textFieldStyle(.roundedBorder)
+            .border(Color.secondary)
+//        Text(String(format: "%.0f g", element.weight.wrappedValue))
     }
     
     /**

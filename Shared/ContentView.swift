@@ -29,6 +29,7 @@ struct ContentView: View {
     
     private let title = "Tabler/Detailer Core Data Demo"
     
+    @State private var selected: Fruit.ID? = nil
     @State private var toEdit: Fruit? = nil
     @State private var isAdd: Bool = false
 
@@ -38,9 +39,10 @@ struct ContentView: View {
     private var fruits: FetchedResults<Fruit>
     
     private var gridItems: [GridItem] = [
-        GridItem(.flexible(minimum: 35, maximum: 40), alignment: .leading),
-        GridItem(.flexible(minimum: 100), alignment: .leading),
-        GridItem(.flexible(minimum: 40, maximum: 80), alignment: .trailing),
+        GridItem(.flexible(minimum: 35, maximum: 50), alignment: .leading),
+        GridItem(.flexible(minimum: 100, maximum: 200), alignment: .leading),
+        GridItem(.flexible(minimum: 90, maximum: 100), alignment: .trailing),
+        //GridItem(.flexible(minimum: 35, maximum: 50), alignment: .leading),
     ]
     
     private var listConfig: TablerListConfig<Fruit> {
@@ -72,10 +74,11 @@ struct ContentView: View {
     }
     
     private var theContent: some View {
-        TablerList(listConfig,
-                   headerContent: header,
-                   rowContent: row,
-                   results: fruits)
+        TablerList1(listConfig,
+                    headerContent: header,
+                    rowContent: row,
+                    results: fruits,
+                    selected: $selected)
             .editDetailer(detailerConfig,
                           toEdit: $toEdit,
                           isAdd: $isAdd,
@@ -90,9 +93,19 @@ struct ContentView: View {
                     }) { Text("Clear") }
                 }
                 ToolbarItemGroup {
+#if os(macOS)
+                    editButton
+#endif
                     addButton
                 }
             }
+    }
+    
+    private var editButton: some View {
+        Button(action: { editAction(selected) } ) {
+            Text("Edit")
+        }
+        .disabled(selected == nil)
     }
 
     private var addButton: some View {
@@ -145,6 +158,22 @@ struct ContentView: View {
     }
 #endif
     
+    // MARK: - Helpers
+    
+    private func get(for id: Fruit.ID?) -> Fruit? {
+        guard let _id = id else { return nil }
+        do {
+            let fetchRequest = NSFetchRequest<Fruit>.init(entityName: "Fruit")
+            fetchRequest.predicate = NSPredicate(format: "id == %@", _id!)
+            let results = try viewContext.fetch(fetchRequest)
+            return results.first
+        } catch {
+            let nsError = error as NSError
+            print("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        return nil
+    }
+    
     // MARK: - Action Handlers
     
     private func addAction() {
@@ -152,6 +181,12 @@ struct ContentView: View {
         toEdit = Fruit(context: viewContext)
     }
     
+    private func editAction(_ id: Fruit.ID?) {
+        guard let _fruit = get(for: id) else { return }
+        isAdd = false
+        toEdit = _fruit
+    }
+
     private func cancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
         viewContext.rollback()
     }
@@ -166,16 +201,13 @@ struct ContentView: View {
     }
     
     private func deleteAction(_ id: Fruit.ID) {
-        guard let _id = id else { return }
+        guard let _fruit = get(for: id) else { return }
         do {
-            let fetchRequest = NSFetchRequest<Fruit>.init(entityName: "Fruit")
-            fetchRequest.predicate = NSPredicate(format: "id == %@", _id)
-            let results = try viewContext.fetch(fetchRequest)
-            results.forEach { viewContext.delete($0) }
+            viewContext.delete(_fruit)
             try viewContext.save()
         } catch {
             let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
 
@@ -185,7 +217,7 @@ struct ContentView: View {
             try viewContext.save()
         } catch {
             let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
 }

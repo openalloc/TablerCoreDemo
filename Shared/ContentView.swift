@@ -158,9 +158,11 @@ struct ContentView: View {
         Text(String(format: "%.0f g", element.weight))
     }
     
+    typealias ProjectedValue<E> = ObservedObject<E>.Wrapper where E: ObservableObject
+    
     // BOUND value row (with direct editing)
     @ViewBuilder
-    private func brow(_ element: ObservedObject<Fruit>.Wrapper) -> some View {
+    private func brow(_ element: ProjectedValue<Fruit>) -> some View {
         Text(element.id.wrappedValue ?? "")
 //        Text(element.name ?? "")
         TextField("Name", text: Binding(element.name, replacingNilWith: ""))

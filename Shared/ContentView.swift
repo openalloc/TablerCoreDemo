@@ -33,8 +33,9 @@ struct ContentView: View {
     
     typealias Sort = TablerSort<Fruit>
     typealias Context = TablerContext<Fruit>
+    typealias ProjectedValue = ObservedObject<Fruit>.Wrapper
     
-    private let title = "Tabler/Detailer Core Data Demo"
+    private let title = "Tabler Core Data Demo"
     
     @State private var selected: Fruit.ID? = nil
     @State private var toEdit: Fruit? = nil
@@ -87,21 +88,21 @@ struct ContentView: View {
                 .tabItem { Text("Unbound") }
                 .tag(Tabs.unbound)
             boundView
-                .tabItem { Text("Bound (Observable Object)") }
+                .tabItem { Text("Bound") }
                 .tag(Tabs.bound)
         }
+#if os(macOS)
+        .padding()
+#endif
+
 //        .editDetailer(detailerConfig,
 //                      toEdit: $toEdit,
 //                      isAdd: $isAdd,
 //                      detailContent: editDetail)
         .toolbar {
             ToolbarItemGroup {
-                Button(action: {
-                    FruitBase.loadSampleData(viewContext)
-                }) { Text("Load Sample Data") }
-                Button(action: {
-                    clearAction()
-                }) { Text("Clear") }
+                loadButton
+                clearButton
             }
             ToolbarItemGroup {
 #if os(macOS)
@@ -121,23 +122,11 @@ struct ContentView: View {
     }
     
     private var boundView: some View {
-        TablerListO(listConfig,
+        TablerListC(listConfig,
                     headerContent: header,
                     rowContent: brow,
                     results: fruits)
-    }
-    
-    private var editButton: some View {
-        Button(action: { editAction(selected) } ) {
-            Text("Edit")
-        }
-        .disabled(selected == nil)
-    }
-    
-    private var addButton: some View {
-        Button(action: addAction) {
-            Label("Add Item", systemImage: "plus")
-        }
+            .onDisappear(perform: commitAction) // auto-save any pending changes
     }
     
     @ViewBuilder
@@ -158,19 +147,21 @@ struct ContentView: View {
         Text(String(format: "%.0f g", element.weight))
     }
     
-    typealias ProjectedValue<E> = ObservedObject<E>.Wrapper where E: ObservableObject
-    
-    // BOUND value row (with direct editing)
+    // BOUND value row (with direct editing and auto-save)
     @ViewBuilder
-    private func brow(_ element: ProjectedValue<Fruit>) -> some View {
+    private func brow(_ element: ProjectedValue) -> some View {
         Text(element.id.wrappedValue ?? "")
-        TextField("Name", text: Binding(element.name, replacingNilWith: ""))
+        TextField("Name",
+                  text: Binding(element.name, replacingNilWith: ""),
+                  onCommit: commitAction)
             .textFieldStyle(.roundedBorder)
             .border(Color.secondary)
-        TextField("Weight", value: element.weight, formatter: NumberFormatter())
+        TextField("Weight",
+                  value: element.weight,
+                  formatter: NumberFormatter(),
+                  onCommit: commitAction)
             .textFieldStyle(.roundedBorder)
             .border(Color.secondary)
-//        Text(String(format: "%.0f g", element.weight.wrappedValue))
     }
     
     /**
@@ -204,6 +195,31 @@ struct ContentView: View {
         }
     }
     
+    private var loadButton: some View {
+        Button(action: {
+            FruitBase.loadSampleData(viewContext)
+        }) { Text("Load Sample Data") }
+    }
+    
+    private var clearButton: some View {
+        Button(action: {
+            clearAction()
+        }) { Text("Clear") }
+    }
+    
+    private var editButton: some View {
+        Button(action: { editAction(selected) } ) {
+            Text("Edit")
+        }
+        .disabled(selected == nil)
+    }
+    
+    private var addButton: some View {
+        Button(action: addAction) {
+            Label("Add Item", systemImage: "plus")
+        }
+    }
+    
     // MARK: - Menus
     
 #if os(macOS)
@@ -226,13 +242,23 @@ struct ContentView: View {
             return try viewContext.fetch(fetchRequest)
         } catch {
             let nsError = error as NSError
-            print("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
         return []
     }
     
     // MARK: - Action Handlers
     
+    private func commitAction() {
+        print("commitAction: saving")
+        do {
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+
     private func addAction() {
         isAdd = true                // NOTE cleared on dismissal of detail sheet
         toEdit = Fruit(context: viewContext)
@@ -253,7 +279,7 @@ struct ContentView: View {
             try viewContext.save()
         } catch {
             let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            fatalError("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
     
@@ -265,7 +291,7 @@ struct ContentView: View {
             try viewContext.save()
         } catch {
             let nsError = error as NSError
-            print("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
     
@@ -275,7 +301,7 @@ struct ContentView: View {
             try viewContext.save()
         } catch {
             let nsError = error as NSError
-            print("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
 }

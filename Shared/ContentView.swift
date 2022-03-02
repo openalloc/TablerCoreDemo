@@ -54,7 +54,7 @@ struct ContentView: View {
     ]
     
     private var listConfig: TablerListConfig<Fruit> {
-        TablerListConfig<Fruit>(gridItems: gridItems)
+        TablerListConfig<Fruit>()
     }
     
     private var detailerConfig: DetailerConfig<Fruit> {
@@ -102,9 +102,9 @@ struct ContentView: View {
         .padding()
 #endif
         .editDetailer(detailerConfig,
-                       toEdit: $toEdit,
-                       isAdd: $isAdd,
-                       detailContent: editDetail)
+                      toEdit: $toEdit,
+                      isAdd: $isAdd,
+                      detailContent: editDetail)
         .toolbar {
             ToolbarItemGroup {
                 loadButton
@@ -119,42 +119,45 @@ struct ContentView: View {
         }
     }
     
-    @ViewBuilder
     private func header(_ ctx: Binding<Context>) -> some View {
-        Sort.columnTitle("ID", ctx, \.id)
-            .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
-        Sort.columnTitle("Name", ctx, \.name)
-            .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
-        Sort.columnTitle("Weight", ctx, \.weight)
-            .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            Sort.columnTitle("ID", ctx, \.id)
+                .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
+            Sort.columnTitle("Name", ctx, \.name)
+                .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
+            Sort.columnTitle("Weight", ctx, \.weight)
+                .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
+        }
     }
     
-    @ViewBuilder
     private func row(_ element: Fruit) -> some View {
-        Text(element.id ?? "")
-            .modifier(menu(element))    // TODO is there a better way to handle menu?
-        Text(element.name ?? "")
-        Text(String(format: "%.0f g", element.weight))
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            Text(element.id ?? "")
+                .modifier(menu(element))    // TODO is there a better way to handle menu?
+            Text(element.name ?? "")
+            Text(String(format: "%.0f g", element.weight))
+        }
     }
     
     // BOUND value row (with direct editing and auto-save)
     // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
-    @ViewBuilder
     private func brow(_ element: ProjectedValue) -> some View {
-        Text(element.id.wrappedValue ?? "")
-        TextField("Name",
-                  text: Binding(element.name, replacingNilWith: ""),
-                  onCommit: commitAction)
-            .textFieldStyle(.roundedBorder)
-            .border(Color.secondary)
-        TextField("Weight",
-                  value: element.weight,
-                  formatter: NumberFormatter(),
-                  onCommit: commitAction)
-            .textFieldStyle(.roundedBorder)
-            .border(Color.secondary)
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            Text(element.id.wrappedValue ?? "")
+            TextField("Name",
+                      text: Binding(element.name, replacingNilWith: ""),
+                      onCommit: commitAction)
+                .textFieldStyle(.roundedBorder)
+                .border(Color.secondary)
+            TextField("Weight",
+                      value: element.weight,
+                      formatter: NumberFormatter(),
+                      onCommit: commitAction)
+                .textFieldStyle(.roundedBorder)
+                .border(Color.secondary)
+        }
     }
-   
+    
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
         Form {
             TextField("ID", text: Binding(element.id, replacingNilWith: ""))
@@ -231,7 +234,7 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-
+    
     private func addAction() {
         if childContext == nil { childContext = viewContext.childContext() }
         let childsFruit = Fruit(context: childContext!)
@@ -262,7 +265,7 @@ struct ContentView: View {
             print("\(#function): child context not found")
             return
         }
-
+        
         do {
             if moc.hasChanges {
                 try moc.save()

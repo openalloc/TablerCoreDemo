@@ -101,7 +101,7 @@ struct ContentView: View {
 #if os(macOS)
         .padding()
 #endif
-        .editDetailerC(detailerConfig,
+        .editDetailer(detailerConfig,
                        toEdit: $toEdit,
                        isAdd: $isAdd,
                        detailContent: editDetail)

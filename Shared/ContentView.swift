@@ -16,8 +16,6 @@
 // limitations under the License.
 //
 
-//TODO use a nested viewContext to target rollback to the changes made by detailer.
-
 import SwiftUI
 import CoreData
 import Tabler
@@ -37,6 +35,7 @@ struct ContentView: View {
     
     private let title = "Tabler Core Data Demo"
     
+    @State private var childContext: NSManagedObjectContext? = nil
     @State private var selected: Fruit.ID? = nil
     @State private var toEdit: Fruit? = nil
     @State private var isAdd: Bool = false
@@ -61,15 +60,15 @@ struct ContentView: View {
     private var detailerConfig: DetailerConfig<Fruit> {
         DetailerConfig<Fruit>(
             onDelete: deleteAction,
-            onSave: saveAction,
-            onCancel: cancelAction,
+            onSave: detailSaveAction,
+            onCancel: detailCancelAction,
             titler: { _ in title })
     }
     
     // MARK: - Views
     
     var body: some View {
-        Group {
+        VStack {
 #if os(macOS)
             tabView
 #elseif os(iOS)
@@ -102,11 +101,10 @@ struct ContentView: View {
 #if os(macOS)
         .padding()
 #endif
-
-//        .editDetailer(detailerConfig,
-//                      toEdit: $toEdit,
-//                      isAdd: $isAdd,
-//                      detailContent: editDetail)
+        .editDetailerC(detailerConfig,
+                       toEdit: $toEdit,
+                       isAdd: $isAdd,
+                       detailContent: editDetail)
         .toolbar {
             ToolbarItemGroup {
                 loadButton
@@ -140,6 +138,7 @@ struct ContentView: View {
     }
     
     // BOUND value row (with direct editing and auto-save)
+    // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
     @ViewBuilder
     private func brow(_ element: ProjectedValue) -> some View {
         Text(element.id.wrappedValue ?? "")
@@ -155,34 +154,15 @@ struct ContentView: View {
             .textFieldStyle(.roundedBorder)
             .border(Color.secondary)
     }
-    
-    /**
-     TODO should detailer be using an @ObservedObject?
-     
-     struct EditView : View {
-         @ObservedObject var book: Book
-         
-         init(book: Book) {
-             self.book = book
-         }
-         
-         var body : some View {
-             TextField("Name", text: $book.bookName)
-         }
-     }
-     
-     
-     @ObservedObject var thing: Thing
-     TextField("name", text: $thing.localName)
-     */
-    private func editDetail(ctx: DetailerContext<Fruit>, element: Binding<Fruit>) -> some View {
+   
+    private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
         Form {
             TextField("ID", text: Binding(element.id, replacingNilWith: ""))
-                .validate(ctx, element, \.id) { ($0?.count ?? 0) > 0 }
+                //.validate(ctx, element, \.id) { ($0?.count ?? 0) > 0 }
             TextField("Name", text: Binding(element.name, replacingNilWith: ""))
-                .validate(ctx, element, \.name) { ($0?.count ?? 0) > 0 }
+                //.validate(ctx, element, \.name) { ($0?.count ?? 0) > 0 }
             TextField("Weight", value: element.weight, formatter: NumberFormatter())
-                .validate(ctx, element, \.weight) { $0 > 0 }
+                //.validate(ctx, element, \.weight) { $0 > 0 }
             TextField("Color", text: Binding(element.color, replacingNilWith: "gray"))
         }
     }
@@ -229,9 +209,9 @@ struct ContentView: View {
     private func get(for id: Fruit.ID?) -> [Fruit] {
         guard let _id = id else { return [] }
         do {
-            let fetchRequest = NSFetchRequest<Fruit>.init(entityName: "Fruit")
-            fetchRequest.predicate = NSPredicate(format: "id == %@", _id!)
-            return try viewContext.fetch(fetchRequest)
+            let fr = NSFetchRequest<Fruit>.init(entityName: "Fruit")
+            fr.predicate = NSPredicate(format: "id == %@", _id!)
+            return try viewContext.fetch(fr)
         } catch {
             let nsError = error as NSError
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
@@ -241,8 +221,8 @@ struct ContentView: View {
     
     // MARK: - Action Handlers
     
+    // supporting "auto-save" of direct modifications
     private func commitAction() {
-        print("commitAction: saving")
         do {
             try viewContext.save()
         } catch {
@@ -252,26 +232,44 @@ struct ContentView: View {
     }
 
     private func addAction() {
+        if childContext == nil { childContext = viewContext.childContext() }
+        let childsFruit = Fruit(context: childContext!)
         isAdd = true                // NOTE cleared on dismissal of detail sheet
-        toEdit = Fruit(context: viewContext)
+        toEdit = childsFruit
     }
     
     private func editAction(_ id: Fruit.ID?) {
+        if childContext == nil { childContext = viewContext.childContext() }
         guard let _fruit = get(for: id).first else { return }
+        let childsFruit = childContext!.object(with: _fruit.objectID) as! Fruit
         isAdd = false
-        toEdit = _fruit
+        toEdit = childsFruit
     }
     
-    private func cancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
-        viewContext.rollback()
+    private func detailCancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+        guard let moc = self.childContext else {
+            print("\(#function): child context not found")
+            return
+        }
+        
+        if moc.hasChanges { moc.rollback() }
     }
     
-    private func saveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+    /// Note the parent context must ALSO be saved to persist the changes of its child.
+    private func detailSaveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+        guard let moc = self.childContext else {
+            print("\(#function): child context not found")
+            return
+        }
+
         do {
-            try viewContext.save()
+            if moc.hasChanges {
+                try moc.save()
+                try viewContext.save()
+            }
         } catch {
             let nsError = error as NSError
-            fatalError("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
     
@@ -303,3 +301,4 @@ struct ContentView_Previews: PreviewProvider {
         ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
+

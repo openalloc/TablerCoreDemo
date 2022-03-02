@@ -84,10 +84,18 @@ struct ContentView: View {
     
     private var tabView: some View {
         TabView(selection: $tab) {
-            unboundView
+            TablerList1(listConfig,
+                        headerContent: header,
+                        rowContent: row,
+                        results: fruits,
+                        selected: $selected)
                 .tabItem { Text("Unbound") }
                 .tag(Tabs.unbound)
-            boundView
+            TablerListC(listConfig,
+                        headerContent: header,
+                        rowContent: brow,
+                        results: fruits)
+                .onDisappear(perform: commitAction) // auto-save any pending changes
                 .tabItem { Text("Bound") }
                 .tag(Tabs.bound)
         }
@@ -111,22 +119,6 @@ struct ContentView: View {
                 addButton
             }
         }
-    }
-    
-    private var unboundView: some View {
-        TablerList1(listConfig,
-                    headerContent: header,
-                    rowContent: row,
-                    results: fruits,
-                    selected: $selected)
-    }
-    
-    private var boundView: some View {
-        TablerListC(listConfig,
-                    headerContent: header,
-                    rowContent: brow,
-                    results: fruits)
-            .onDisappear(perform: commitAction) // auto-save any pending changes
     }
     
     @ViewBuilder

@@ -132,7 +132,7 @@ struct ContentView: View {
     @ViewBuilder
     private func row(_ element: Fruit) -> some View {
         Text(element.id ?? "")
-            .modifier(menu(element))
+            .modifier(menu(element))    // TODO is there a better way to handle menu?
         Text(element.name ?? "")
         Text(String(format: "%.0f g", element.weight))
     }
@@ -158,12 +158,13 @@ struct ContentView: View {
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
         Form {
             TextField("ID", text: Binding(element.id, replacingNilWith: ""))
-                //.validate(ctx, element, \.id) { ($0?.count ?? 0) > 0 }
+                .validate(ctx, element.id.wrappedValue, \.id) { ($0?.count ?? 0) > 0 }
             TextField("Name", text: Binding(element.name, replacingNilWith: ""))
-                //.validate(ctx, element, \.name) { ($0?.count ?? 0) > 0 }
+                .validate(ctx, element.name.wrappedValue, \.name) { ($0?.count ?? 0) > 0 }
             TextField("Weight", value: element.weight, formatter: NumberFormatter())
-                //.validate(ctx, element, \.weight) { $0 > 0 }
+                .validate(ctx, element.weight.wrappedValue, \.weight) { $0 > 0 }
             TextField("Color", text: Binding(element.color, replacingNilWith: "gray"))
+                .validate(ctx.config, true)  // spacer, for consistency
         }
     }
     

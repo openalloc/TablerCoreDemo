@@ -58,16 +58,14 @@ struct ContentView: View {
                      onEdit: editAction)
     }
     
-    private var listConfig: TablerConfig<Fruit> {
-        TablerConfig(rowSpacing: TablerConfigDefaults.rowSpacing,
-                     paddingInsets: TablerConfigDefaults.paddingInsets)
+    private var listConfig: TablerListConfig<Fruit> {
+        TablerListConfig<Fruit>()
     }
-    
-    private var stackConfig: TablerConfig<Fruit> {
-        TablerConfig(rowSpacing: TablerStackConfigDefaults.rowSpacing,
-                     paddingInsets: TablerStackConfigDefaults.paddingInsets)
+
+    private var stackConfig: TablerStackConfig<Fruit> {
+        TablerStackConfig<Fruit>()
     }
-    
+        
     private var detailerConfig: DetailerConfig<Fruit> {
         DetailerConfig<Fruit>(
             onDelete: deleteAction,

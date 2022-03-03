@@ -24,22 +24,19 @@ import Detailer
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    enum Tabs {
-        case unbound
-        case bound
-    }
-    
     typealias Sort = TablerSort<Fruit>
     typealias Context = TablerContext<Fruit>
     typealias ProjectedValue = ObservedObject<Fruit>.Wrapper
     
+    private let minWidth: CGFloat = 400
     private let title = "Tabler Core Data Demo"
     
     @State private var childContext: NSManagedObjectContext? = nil
     @State private var selected: Fruit.ID? = nil
+    @State private var mselected = Set<Fruit.ID>()
     @State private var toEdit: Fruit? = nil
     @State private var isAdd: Bool = false
-    @State private var tab: Tabs = .unbound
+    @State private var headerize: Bool = true
     
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.name, order: .forward)],
@@ -53,8 +50,22 @@ struct ContentView: View {
         //GridItem(.flexible(minimum: 35, maximum: 50), alignment: .leading),
     ]
     
-    private var listConfig: TablerListConfig<Fruit> {
-        TablerListConfig<Fruit>(gridItems: gridItems)
+    private var myToolbar: FruitToolbar {
+        FruitToolbar(headerize: $headerize,
+                     onLoad: loadAction,
+                     onClear: clearAction,
+                     onAdd: addAction,
+                     onEdit: editAction)
+    }
+    
+    private var listConfig: TablerConfig<Fruit> {
+        TablerConfig(rowSpacing: TablerConfigDefaults.rowSpacing,
+                     paddingInsets: TablerConfigDefaults.paddingInsets)
+    }
+    
+    private var stackConfig: TablerConfig<Fruit> {
+        TablerConfig(rowSpacing: TablerStackConfigDefaults.rowSpacing,
+                     paddingInsets: TablerStackConfigDefaults.paddingInsets)
     }
     
     private var detailerConfig: DetailerConfig<Fruit> {
@@ -68,93 +79,69 @@ struct ContentView: View {
     // MARK: - Views
     
     var body: some View {
-        VStack {
-#if os(macOS)
-            tabView
-#elseif os(iOS)
-            NavigationView {
-                tabView
-                    .navigationTitle(title)
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
+        NavigationView {
+            List {
+                Section("List-based") {
+                    lists
+                }
+                
+                Section("Stack-based") {
+                    stacks
+                }
+           }
+#if os(iOS)
+            .navigationTitle(title)
 #endif
         }
-    }
-    
-    private var tabView: some View {
-        TabView(selection: $tab) {
-            TablerList1(listConfig,
-                        headerContent: header,
-                        rowContent: row,
-                        results: fruits,
-                        selected: $selected)
-                .tabItem { Text("Unbound") }
-                .tag(Tabs.unbound)
-            TablerListC(listConfig,
-                        headerContent: header,
-                        rowContent: brow,
-                        results: fruits)
-                .onDisappear(perform: commitAction) // auto-save any pending changes
-                .tabItem { Text("Bound") }
-                .tag(Tabs.bound)
-        }
+        .navigationViewStyle(DoubleColumnNavigationViewStyle())
 #if os(macOS)
-        .padding()
+        .navigationTitle(title)
 #endif
         .editDetailer(detailerConfig,
-                       toEdit: $toEdit,
-                       isAdd: $isAdd,
-                       detailContent: editDetail)
-        .toolbar {
-            ToolbarItemGroup {
-                loadButton
-                clearButton
-            }
-            ToolbarItemGroup {
-#if os(macOS)
-                editButton
-#endif
-                addButton
-            }
+                      toEdit: $toEdit,
+                      isAdd: $isAdd,
+                      detailContent: editDetail)
+    }
+    
+    private func header(_ ctx: Binding<Context>) -> some View {
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            Sort.columnTitle("ID", ctx, \.id)
+                .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
+            Sort.columnTitle("Name", ctx, \.name)
+                .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
+            Sort.columnTitle("Weight", ctx, \.weight)
+                .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
         }
     }
     
-    @ViewBuilder
-    private func header(_ ctx: Binding<Context>) -> some View {
-        Sort.columnTitle("ID", ctx, \.id)
-            .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
-        Sort.columnTitle("Name", ctx, \.name)
-            .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
-        Sort.columnTitle("Weight", ctx, \.weight)
-            .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
-    }
-    
-    @ViewBuilder
     private func row(_ element: Fruit) -> some View {
-        Text(element.id ?? "")
-            .modifier(menu(element))    // TODO is there a better way to handle menu?
-        Text(element.name ?? "")
-        Text(String(format: "%.0f g", element.weight))
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            Text(element.id ?? "")
+                .modifier(menu(element))    // TODO is there a better way to handle menu?
+            Text(element.name ?? "")
+            Text(String(format: "%.0f g", element.weight))
+        }
     }
     
     // BOUND value row (with direct editing and auto-save)
     // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
-    @ViewBuilder
     private func brow(_ element: ProjectedValue) -> some View {
-        Text(element.id.wrappedValue ?? "")
-        TextField("Name",
-                  text: Binding(element.name, replacingNilWith: ""),
-                  onCommit: commitAction)
-            .textFieldStyle(.roundedBorder)
-            .border(Color.secondary)
-        TextField("Weight",
-                  value: element.weight,
-                  formatter: NumberFormatter(),
-                  onCommit: commitAction)
-            .textFieldStyle(.roundedBorder)
-            .border(Color.secondary)
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            Text(element.id.wrappedValue ?? "")
+            TextField("Name",
+                      text: Binding(element.name, replacingNilWith: ""),
+                      onCommit: commitAction)
+                .textFieldStyle(.roundedBorder)
+                .border(Color.secondary)
+            TextField("Weight",
+                      value: element.weight,
+                      formatter: NumberFormatter(),
+                      onCommit: commitAction)
+                .textFieldStyle(.roundedBorder)
+                .border(Color.secondary)
+        }
     }
-   
+    
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
         Form {
             TextField("ID", text: Binding(element.id, replacingNilWith: ""))
@@ -168,29 +155,194 @@ struct ContentView: View {
         }
     }
     
-    private var loadButton: some View {
-        Button(action: {
-            FruitBase.loadSampleData(viewContext)
-        }) { Text("Load Sample Data") }
+    @ViewBuilder
+    var lists: some View {
+        NavigationLink("TablerList"   ) { listView  .toolbar { myToolbar }}
+        NavigationLink("TablerList1"  ) { list1View .toolbar { myToolbar }}
+        NavigationLink("TablerListM"  ) { listMView .toolbar { myToolbar }}
+        NavigationLink("TablerListC"  ) { listCView .toolbar { myToolbar }}
+        NavigationLink("TablerList1C" ) { list1CView.toolbar { myToolbar }}
+        NavigationLink("TablerListMC" ) { listMCView.toolbar { myToolbar }}
     }
     
-    private var clearButton: some View {
-        Button(action: {
-            clearAction()
-        }) { Text("Clear") }
+    @ViewBuilder
+    private var stacks: some View {
+        NavigationLink("TablerStack"  ) { stackView  .toolbar { myToolbar }}
+        NavigationLink("TablerStack1" ) { stack1View .toolbar { myToolbar }}
+        NavigationLink("TablerStackC" ) { stackCView .toolbar { myToolbar }}
+        NavigationLink("TablerStack1C") { stack1CView.toolbar { myToolbar }}
     }
     
-    private var editButton: some View {
-        Button(action: { editAction(selected) } ) {
-            Text("Edit")
+
+    // MARK: - List Views
+    
+    private var listView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerList(listConfig,
+                           headerContent: header,
+                           rowContent: row,
+                           results: fruits)
+            } else {
+                TablerList(listConfig,
+                           rowContent: row,
+                           results: fruits)
+            }
         }
-        .disabled(selected == nil)
     }
     
-    private var addButton: some View {
-        Button(action: addAction) {
-            Label("Add Item", systemImage: "plus")
+    private var list1View: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerList1(listConfig,
+                            headerContent: header,
+                            rowContent: row,
+                            results: fruits,
+                            selected: $selected)
+            } else {
+                TablerList1(listConfig,
+                            rowContent: row,
+                            results: fruits,
+                            selected: $selected)
+            }
         }
+    }
+    
+    private var listMView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerListM(listConfig,
+                            headerContent: header,
+                            rowContent: row,
+                            results: fruits,
+                            selected: $mselected)
+            } else {
+                TablerListM(listConfig,
+                            rowContent: row,
+                            results: fruits,
+                            selected: $mselected)
+            }
+        }
+    }
+    
+    private var listCView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerListC(listConfig,
+                            headerContent: header,
+                            rowContent: brow,
+                            results: fruits)
+            } else {
+                TablerListC(listConfig,
+                            rowContent: brow,
+                            results: fruits)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+    private var list1CView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerList1C(listConfig,
+                             headerContent: header,
+                             rowContent: brow,
+                             results: fruits,
+                             selected: $selected)
+            } else {
+                TablerList1C(listConfig,
+                             rowContent: brow,
+                             results: fruits,
+                             selected: $selected)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+    private var listMCView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerListMC(listConfig,
+                             headerContent: header,
+                             rowContent: brow,
+                             results: fruits,
+                             selected: $mselected)
+            } else {
+                TablerListMC(listConfig,
+                             rowContent: brow,
+                             results: fruits,
+                             selected: $mselected)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+    // MARK: - Stack Views
+    
+    private var stackView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerStack(stackConfig,
+                            headerContent: header,
+                            rowContent: row,
+                            results: fruits)
+            } else {
+                TablerStack(stackConfig,
+                            rowContent: row,
+                            results: fruits)
+            }
+        }
+    }
+    
+    private var stack1View: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerStack1(stackConfig,
+                             headerContent: header,
+                             rowContent: row,
+                             results: fruits,
+                             selected: $selected)
+            } else {
+                TablerStack1(stackConfig,
+                             rowContent: row,
+                             results: fruits,
+                             selected: $selected)
+            }
+        }
+    }
+    
+    private var stackCView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerStackC(stackConfig,
+                             headerContent: header,
+                             rowContent: brow,
+                             results: fruits)
+            } else {
+                TablerStackC(stackConfig,
+                             rowContent: brow,
+                             results: fruits)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+    private var stack1CView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerStack1C(stackConfig,
+                              headerContent: header,
+                              rowContent: brow,
+                              results: fruits,
+                              selected: $selected)
+            } else {
+                TablerStack1C(stackConfig,
+                              rowContent: brow,
+                              results: fruits,
+                              selected: $selected)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
     }
     
     // MARK: - Menus
@@ -231,7 +383,7 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-
+    
     private func addAction() {
         if childContext == nil { childContext = viewContext.childContext() }
         let childsFruit = Fruit(context: childContext!)
@@ -239,9 +391,15 @@ struct ContentView: View {
         toEdit = childsFruit
     }
     
+    private func editAction() {
+        // TODO make work with multi-select too
+        editAction(selected)
+    }
+    
     private func editAction(_ id: Fruit.ID?) {
+        guard let _id = id else { return }
         if childContext == nil { childContext = viewContext.childContext() }
-        guard let _fruit = get(for: id).first else { return }
+        guard let _fruit = get(for: _id).first else { return }
         let childsFruit = childContext!.object(with: _fruit.objectID) as! Fruit
         isAdd = false
         toEdit = childsFruit
@@ -262,7 +420,7 @@ struct ContentView: View {
             print("\(#function): child context not found")
             return
         }
-
+        
         do {
             if moc.hasChanges {
                 try moc.save()
@@ -284,6 +442,10 @@ struct ContentView: View {
             let nsError = error as NSError
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
+    }
+    
+    private func loadAction() {
+        FruitBase.loadSampleData(viewContext)
     }
     
     private func clearAction() {

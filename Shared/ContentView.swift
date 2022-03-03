@@ -58,16 +58,14 @@ struct ContentView: View {
                      onEdit: editAction)
     }
     
-    private var listConfig: TablerConfig<Fruit> {
-        TablerConfig(rowSpacing: TablerConfigDefaults.rowSpacing,
-                     paddingInsets: TablerConfigDefaults.paddingInsets)
+    private var listConfig: TablerListConfig<Fruit> {
+        TablerListConfig<Fruit>()
     }
-    
-    private var stackConfig: TablerConfig<Fruit> {
-        TablerConfig(rowSpacing: TablerStackConfigDefaults.rowSpacing,
-                     paddingInsets: TablerStackConfigDefaults.paddingInsets)
+
+    private var stackConfig: TablerStackConfig<Fruit> {
+        TablerStackConfig<Fruit>()
     }
-    
+        
     private var detailerConfig: DetailerConfig<Fruit> {
         DetailerConfig<Fruit>(
             onDelete: deleteAction,
@@ -180,12 +178,12 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerList(listConfig,
-                           headerContent: header,
-                           rowContent: row,
+                           header: header,
+                           row: row,
                            results: fruits)
             } else {
                 TablerList(listConfig,
-                           rowContent: row,
+                           row: row,
                            results: fruits)
             }
         }
@@ -195,13 +193,13 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerList1(listConfig,
-                            headerContent: header,
-                            rowContent: row,
+                            header: header,
+                            row: row,
                             results: fruits,
                             selected: $selected)
             } else {
                 TablerList1(listConfig,
-                            rowContent: row,
+                            row: row,
                             results: fruits,
                             selected: $selected)
             }
@@ -212,13 +210,13 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerListM(listConfig,
-                            headerContent: header,
-                            rowContent: row,
+                            header: header,
+                            row: row,
                             results: fruits,
                             selected: $mselected)
             } else {
                 TablerListM(listConfig,
-                            rowContent: row,
+                            row: row,
                             results: fruits,
                             selected: $mselected)
             }
@@ -229,12 +227,12 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerListC(listConfig,
-                            headerContent: header,
-                            rowContent: brow,
+                            header: header,
+                            row: brow,
                             results: fruits)
             } else {
                 TablerListC(listConfig,
-                            rowContent: brow,
+                            row: brow,
                             results: fruits)
             }
         }
@@ -245,13 +243,13 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerList1C(listConfig,
-                             headerContent: header,
-                             rowContent: brow,
+                             header: header,
+                             row: brow,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerList1C(listConfig,
-                             rowContent: brow,
+                             row: brow,
                              results: fruits,
                              selected: $selected)
             }
@@ -263,13 +261,13 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerListMC(listConfig,
-                             headerContent: header,
-                             rowContent: brow,
+                             header: header,
+                             row: brow,
                              results: fruits,
                              selected: $mselected)
             } else {
                 TablerListMC(listConfig,
-                             rowContent: brow,
+                             row: brow,
                              results: fruits,
                              selected: $mselected)
             }
@@ -283,12 +281,12 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerStack(stackConfig,
-                            headerContent: header,
-                            rowContent: row,
+                            header: header,
+                            row: row,
                             results: fruits)
             } else {
                 TablerStack(stackConfig,
-                            rowContent: row,
+                            row: row,
                             results: fruits)
             }
         }
@@ -298,13 +296,13 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerStack1(stackConfig,
-                             headerContent: header,
-                             rowContent: row,
+                             header: header,
+                             row: row,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerStack1(stackConfig,
-                             rowContent: row,
+                             row: row,
                              results: fruits,
                              selected: $selected)
             }
@@ -315,12 +313,12 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerStackC(stackConfig,
-                             headerContent: header,
-                             rowContent: brow,
+                             header: header,
+                             row: brow,
                              results: fruits)
             } else {
                 TablerStackC(stackConfig,
-                             rowContent: brow,
+                             row: brow,
                              results: fruits)
             }
         }
@@ -331,13 +329,13 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerStack1C(stackConfig,
-                              headerContent: header,
-                              rowContent: brow,
+                              header: header,
+                              row: brow,
                               results: fruits,
                               selected: $selected)
             } else {
                 TablerStack1C(stackConfig,
-                              rowContent: brow,
+                              row: brow,
                               results: fruits,
                               selected: $selected)
             }

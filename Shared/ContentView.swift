@@ -18,8 +18,10 @@
 
 import SwiftUI
 import CoreData
+
 import Tabler
 import Detailer
+import DetailerMenu
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -347,11 +349,19 @@ struct ContentView: View {
     
 #if os(macOS)
     private func menu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
-        EditDetailerContextMenu(detailerConfig, $toEdit, fruit)
+        EditDetailerContextMenu(fruit,
+                                $toEdit,
+                                canEdit: detailerConfig.canEdit,
+                                canDelete: detailerConfig.canDelete,
+                                onDelete: detailerConfig.onDelete)
     }
 #elseif os(iOS)
     private func menu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
-        EditDetailerSwipeMenu(detailerConfig, $toEdit, fruit)
+        EditDetailerSwipeMenu(fruit,
+                              $toEdit,
+                              canEdit: detailerConfig.canEdit,
+                              canDelete: detailerConfig.canDelete,
+                              onDelete: detailerConfig.onDelete)
     }
 #endif
     

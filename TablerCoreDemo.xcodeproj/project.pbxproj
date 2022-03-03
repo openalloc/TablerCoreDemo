@@ -23,10 +23,12 @@
 		4025DB4C27CF46C10011A3E7 /* MOC-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4025DB4B27CF46C10011A3E7 /* MOC-extension.swift */; };
 		4025DB4D27CF46C10011A3E7 /* MOC-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4025DB4B27CF46C10011A3E7 /* MOC-extension.swift */; };
 		402DF71127CDD2CC007082FD /* Detailer in Frameworks */ = {isa = PBXBuildFile; productRef = 402DF71027CDD2CC007082FD /* Detailer */; };
-		402DF71327CDD2D4007082FD /* Detailer in Frameworks */ = {isa = PBXBuildFile; productRef = 402DF71227CDD2D4007082FD /* Detailer */; };
 		402DF71527CDE0D3007082FD /* Binding-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DF71427CDE0D3007082FD /* Binding-extension.swift */; };
 		402DF71627CDE0D3007082FD /* Binding-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DF71427CDE0D3007082FD /* Binding-extension.swift */; };
 		409D654D27CCBBEF00DAE06A /* Tabler in Frameworks */ = {isa = PBXBuildFile; productRef = 409D654C27CCBBEF00DAE06A /* Tabler */; };
+		40A6668127D16ECA00C8F47A /* DetailerMenu in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6668027D16ECA00C8F47A /* DetailerMenu */; };
+		40A6668327D16ED200C8F47A /* DetailerMenu in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6668227D16ED200C8F47A /* DetailerMenu */; };
+		40A6668927D1753200C8F47A /* Detailer in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6668827D1753200C8F47A /* Detailer */; };
 		40F8D49F27D05978009F7331 /* SidewaysScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F8D49D27D05978009F7331 /* SidewaysScroller.swift */; };
 		40F8D4A027D05978009F7331 /* SidewaysScroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F8D49D27D05978009F7331 /* SidewaysScroller.swift */; };
 		40F8D4A127D05978009F7331 /* SelectBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F8D49E27D05978009F7331 /* SelectBorder.swift */; };
@@ -58,7 +60,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				402DF71327CDD2D4007082FD /* Detailer in Frameworks */,
+				40A6668327D16ED200C8F47A /* DetailerMenu in Frameworks */,
+				40A6668927D1753200C8F47A /* Detailer in Frameworks */,
 				409D654D27CCBBEF00DAE06A /* Tabler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -68,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				402DF71127CDD2CC007082FD /* Detailer in Frameworks */,
+				40A6668127D16ECA00C8F47A /* DetailerMenu in Frameworks */,
 				40152D4327CC6E0800776E96 /* Tabler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -154,7 +158,8 @@
 			name = "TablerCoreDemo (iOS)";
 			packageProductDependencies = (
 				409D654C27CCBBEF00DAE06A /* Tabler */,
-				402DF71227CDD2D4007082FD /* Detailer */,
+				40A6668227D16ED200C8F47A /* DetailerMenu */,
+				40A6668827D1753200C8F47A /* Detailer */,
 			);
 			productName = "TablerCoreDemo (iOS)";
 			productReference = 40152D2427CC6DE100776E96 /* TablerCoreDemo.app */;
@@ -176,6 +181,7 @@
 			packageProductDependencies = (
 				40152D4227CC6E0800776E96 /* Tabler */,
 				402DF71027CDD2CC007082FD /* Detailer */,
+				40A6668027D16ECA00C8F47A /* DetailerMenu */,
 			);
 			productName = "TablerCoreDemo (macOS)";
 			productReference = 40152D2A27CC6DE100776E96 /* TablerCoreDemo.app */;
@@ -544,13 +550,21 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Detailer;
 		};
-		402DF71227CDD2D4007082FD /* Detailer */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Detailer;
-		};
 		409D654C27CCBBEF00DAE06A /* Tabler */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Tabler;
+		};
+		40A6668027D16ECA00C8F47A /* DetailerMenu */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DetailerMenu;
+		};
+		40A6668227D16ED200C8F47A /* DetailerMenu */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DetailerMenu;
+		};
+		40A6668827D1753200C8F47A /* Detailer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Detailer;
 		};
 /* End XCSwiftPackageProductDependency section */
 

@@ -23,6 +23,8 @@ import Tabler
 import Detailer
 import DetailerMenu
 
+let columnSpacing: CGFloat = 10
+
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
@@ -46,10 +48,10 @@ struct ContentView: View {
     private var fruits: FetchedResults<Fruit>
     
     private var gridItems: [GridItem] = [
-        GridItem(.flexible(minimum: 35, maximum: 50), alignment: .leading),
-        GridItem(.flexible(minimum: 100, maximum: 200), alignment: .leading),
-        GridItem(.flexible(minimum: 90, maximum: 100), alignment: .trailing),
-        //GridItem(.flexible(minimum: 35, maximum: 50), alignment: .leading),
+        GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),
+        GridItem(.flexible(minimum: 100, maximum: 200), spacing: columnSpacing, alignment: .leading),
+        GridItem(.flexible(minimum: 90, maximum: 100), spacing: columnSpacing, alignment: .trailing),
+        //GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),
     ]
     
     private var myToolbar: FruitToolbar {
@@ -103,22 +105,44 @@ struct ContentView: View {
                       detailContent: editDetail)
     }
     
+    private var columnPadding: EdgeInsets {
+        EdgeInsets(top: 0, leading: 5, bottom: 0, trailing: 5)
+    }
+    
+    private var headerBackground: some View {
+        RoundedRectangle(cornerRadius: 5)
+            .fill(
+                LinearGradient(gradient: .init(colors: [Color.gray.opacity(0.5), Color.gray.opacity(0.3)]),
+                               startPoint: .top,
+                               endPoint: .bottom)
+            )
+    }
+    
     private func header(ctx: Binding<Context>) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Sort.columnTitle("ID", ctx, \.id)
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
+                .padding(columnPadding)
+                .background(headerBackground)
             Sort.columnTitle("Name", ctx, \.name)
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
+                .padding(columnPadding)
+                .background(headerBackground)
             Sort.columnTitle("Weight", ctx, \.weight)
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
+                .padding(columnPadding)
+                .background(headerBackground)
         }
     }
     
     private func row(element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Text(element.id ?? "")
+                .padding(columnPadding)
             Text(element.name ?? "")
+                .padding(columnPadding)
             Text(String(format: "%.0f g", element.weight))
+                .padding(columnPadding)
         }
         .modifier(menu(element))
     }
@@ -128,19 +152,21 @@ struct ContentView: View {
     private func brow(element: ProjectedValue) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Text(element.id.wrappedValue ?? "")
+                .padding(columnPadding)
             TextField("Name",
                       text: Binding(element.name, replacingNilWith: ""),
                       onCommit: commitAction)
                 .textFieldStyle(.roundedBorder)
                 .border(Color.secondary)
+                .padding(columnPadding)
             TextField("Weight",
                       value: element.weight,
                       formatter: NumberFormatter(),
                       onCommit: commitAction)
                 .textFieldStyle(.roundedBorder)
                 .border(Color.secondary)
+                .padding(columnPadding)
         }
-        //TODO .modifier(menu(element))
     }
     
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {

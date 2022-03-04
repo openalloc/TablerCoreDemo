@@ -103,7 +103,7 @@ struct ContentView: View {
                       detailContent: editDetail)
     }
     
-    private func header(_ ctx: Binding<Context>) -> some View {
+    private func header(ctx: Binding<Context>) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Sort.columnTitle("ID", ctx, \.id)
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
@@ -114,7 +114,7 @@ struct ContentView: View {
         }
     }
     
-    private func row(_ element: Fruit) -> some View {
+    private func row(element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Text(element.id ?? "")
             Text(element.name ?? "")
@@ -125,7 +125,7 @@ struct ContentView: View {
     
     // BOUND value row (with direct editing and auto-save)
     // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
-    private func brow(_ element: ProjectedValue) -> some View {
+    private func brow(element: ProjectedValue) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Text(element.id.wrappedValue ?? "")
             TextField("Name",

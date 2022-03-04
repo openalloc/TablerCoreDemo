@@ -48,7 +48,7 @@ struct ContentView: View {
     private var fruits: FetchedResults<Fruit>
     
     private var gridItems: [GridItem] = [
-        GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),
+        GridItem(.flexible(minimum: 40, maximum: 60), spacing: columnSpacing, alignment: .leading),
         GridItem(.flexible(minimum: 100, maximum: 200), spacing: columnSpacing, alignment: .leading),
         GridItem(.flexible(minimum: 90, maximum: 100), spacing: columnSpacing, alignment: .trailing),
         //GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),

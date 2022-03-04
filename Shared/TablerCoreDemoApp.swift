@@ -27,5 +27,8 @@ struct TablerCoreDemoApp: App {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
+        .commands {
+            SidebarCommands() // adds a toggle sidebar to View menu
+        }
     }
 }

@@ -117,10 +117,10 @@ struct ContentView: View {
     private func row(_ element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Text(element.id ?? "")
-                .modifier(menu(element))    // TODO is there a better way to handle menu?
             Text(element.name ?? "")
             Text(String(format: "%.0f g", element.weight))
         }
+        .modifier(menu(element))
     }
     
     // BOUND value row (with direct editing and auto-save)
@@ -140,6 +140,7 @@ struct ContentView: View {
                 .textFieldStyle(.roundedBorder)
                 .border(Color.secondary)
         }
+        //TODO .modifier(menu(element))
     }
     
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
@@ -350,18 +351,18 @@ struct ContentView: View {
 #if os(macOS)
     private func menu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
         EditDetailerContextMenu(fruit,
-                                $toEdit,
-                                canEdit: detailerConfig.canEdit,
                                 canDelete: detailerConfig.canDelete,
-                                onDelete: detailerConfig.onDelete)
+                                onDelete: detailerConfig.onDelete,
+                                canEdit: detailerConfig.canEdit,
+                                onEdit: editAction)
     }
 #elseif os(iOS)
     private func menu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
         EditDetailerSwipeMenu(fruit,
-                              $toEdit,
-                              canEdit: detailerConfig.canEdit,
                               canDelete: detailerConfig.canDelete,
-                              onDelete: detailerConfig.onDelete)
+                              onDelete: detailerConfig.onDelete,
+                              canEdit: detailerConfig.canEdit,
+                              onEdit: editAction)
     }
 #endif
     
@@ -393,7 +394,10 @@ struct ContentView: View {
     }
     
     private func addAction() {
-        if childContext == nil { childContext = viewContext.childContext() }
+        if childContext == nil {
+            print("\(#function) saving child context to state variable")
+            childContext = viewContext.childContext()
+        }
         let childsFruit = Fruit(context: childContext!)
         isAdd = true                // NOTE cleared on dismissal of detail sheet
         toEdit = childsFruit
@@ -406,9 +410,16 @@ struct ContentView: View {
     
     private func editAction(_ id: Fruit.ID?) {
         guard let _id = id else { return }
-        if childContext == nil { childContext = viewContext.childContext() }
-        guard let _fruit = get(for: _id).first else { return }
-        let childsFruit = childContext!.object(with: _fruit.objectID) as! Fruit
+        guard let fruit = get(for: _id).first else { return }
+        editAction(fruit)
+    }
+    
+    private func editAction(_ fruit: Fruit) {
+        if childContext == nil {
+            print("\(#function) saving child context to state variable")
+            childContext = viewContext.childContext()
+        }
+        let childsFruit = childContext!.object(with: fruit.objectID) as! Fruit
         isAdd = false
         toEdit = childsFruit
     }
@@ -426,6 +437,7 @@ struct ContentView: View {
     private func detailSaveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
         guard let moc = self.childContext else {
             print("\(#function): child context not found")
+            //moc.rollback()
             return
         }
         

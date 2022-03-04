@@ -452,8 +452,8 @@ struct ContentView: View {
         }
     }
     
-    private func deleteAction(_ id: Fruit.ID) {
-        let _fruit = get(for: id)
+    private func deleteAction(_ fruit: Fruit) {
+        let _fruit = get(for: fruit.id)
         guard _fruit.count > 0 else { return }
         do {
             _fruit.forEach { viewContext.delete($0) }

@@ -213,7 +213,9 @@ struct ContentView: View {
     @ViewBuilder
     private var grids: some View {
         NavigationLink("TablerGrid"  ) { gridView  .toolbar { myToolbar }}
+        NavigationLink("TablerGrid1"  ) { gridView  .toolbar { myToolbar }}
         NavigationLink("TablerGridC" ) { gridCView .toolbar { myToolbar }}
+        NavigationLink("TablerGrid1C" ) { gridCView .toolbar { myToolbar }}
     }
     
     private var myToolbar: FruitToolbar {
@@ -350,11 +352,13 @@ struct ContentView: View {
                 TablerStack1(stackConfig,
                              header: header,
                              row: row,
+                             rowBackground: selectRowBackgroundAction,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerStack1(stackConfig,
                              row: row,
+                             rowBackground: selectRowBackgroundAction,
                              results: fruits,
                              selected: $selected)
             }
@@ -383,11 +387,13 @@ struct ContentView: View {
                 TablerStack1C(stackConfig,
                               header: header,
                               row: brow,
+                              rowBackground: selectRowBackgroundAction,
                               results: fruits,
                               selected: $selected)
             } else {
                 TablerStack1C(stackConfig,
                               row: brow,
+                              rowBackground: selectRowBackgroundAction,
                               results: fruits,
                               selected: $selected)
             }
@@ -416,19 +422,61 @@ struct ContentView: View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerGridC(gridConfig,
-                             header: header,
-                             row: browItems,
-                             results: fruits)
+                            header: header,
+                            row: browItems,
+                            results: fruits)
             } else {
                 TablerGridC(gridConfig,
-                             row: browItems,
-                             results: fruits)
+                            row: browItems,
+                            results: fruits)
             }
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
     
-
+    private var grid1View: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerGrid1(gridConfig,
+                            header: header,
+                            row: rowItems,
+                            rowBackground: selectRowBackgroundAction,
+                            results: fruits,
+                            selected: $selected)
+            } else {
+                TablerGrid1(gridConfig,
+                            row: rowItems,
+                            rowBackground: selectRowBackgroundAction,
+                            results: fruits,
+                            selected: $selected)
+            }
+        }
+    }
+    
+    private var grid1CView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerGrid1C(gridConfig,
+                             header: header,
+                             row: browItems,
+                             rowBackground: selectRowBackgroundAction,
+                             results: fruits,
+                             selected: $selected)
+            } else {
+                TablerGrid1C(gridConfig,
+                             row: browItems,
+                             rowBackground: selectRowBackgroundAction,
+                             results: fruits,
+                             selected: $selected)
+            }
+        }
+    }
+    
+    private func selectRowBackgroundAction(fruit: Fruit) -> some View {
+        RoundedRectangle(cornerRadius: 5)
+            .fill(fruit.id == selected ? Color.accentColor : Color.clear)
+    }
+    
     // MARK: - Menus
     
 #if os(macOS)

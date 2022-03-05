@@ -1,6 +1,6 @@
 # TablerCoreDemo
 
-Core Data demonstration of _SwiftTabler_ and _SwiftDetailer_, a multi-platform SwiftUI components for tabular data
+Core Data demonstration of _SwiftTabler_ and _SwiftDetailer_, multi-platform SwiftUI components for tabular data
 
 _TablerDemo_ is part of the [OpenAlloc](https://github.com/openalloc) family of open source Swift software tools.
 

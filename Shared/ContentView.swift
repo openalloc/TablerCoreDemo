@@ -23,8 +23,6 @@ import Tabler
 import Detailer
 import DetailerMenu
 
-let columnSpacing: CGFloat = 10
-
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
@@ -32,6 +30,7 @@ struct ContentView: View {
     typealias Context = TablerContext<Fruit>
     typealias ProjectedValue = ObservedObject<Fruit>.Wrapper
     
+    private let columnSpacing: CGFloat = 10
     private let minWidth: CGFloat = 400
     private let title = "Tabler Core Data Demo"
     
@@ -47,29 +46,25 @@ struct ContentView: View {
         animation: .default)
     private var fruits: FetchedResults<Fruit>
     
-    private var gridItems: [GridItem] = [
+    private var gridItems: [GridItem] {[
         GridItem(.flexible(minimum: 40, maximum: 60), spacing: columnSpacing, alignment: .leading),
         GridItem(.flexible(minimum: 100, maximum: 200), spacing: columnSpacing, alignment: .leading),
         GridItem(.flexible(minimum: 90, maximum: 100), spacing: columnSpacing, alignment: .trailing),
         //GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),
-    ]
-    
-    private var myToolbar: FruitToolbar {
-        FruitToolbar(headerize: $headerize,
-                     onLoad: loadAction,
-                     onClear: clearAction,
-                     onAdd: addAction,
-                     onEdit: editAction)
-    }
+    ]}
     
     private var listConfig: TablerListConfig<Fruit> {
         TablerListConfig<Fruit>()
     }
-
+    
     private var stackConfig: TablerStackConfig<Fruit> {
         TablerStackConfig<Fruit>()
     }
-        
+    
+    private var gridConfig: TablerGridConfig<Fruit> {
+        TablerGridConfig<Fruit>(gridItems: gridItems)
+    }
+    
     private var detailerConfig: DetailerConfig<Fruit> {
         DetailerConfig<Fruit>(
             onDelete: deleteAction,
@@ -90,7 +85,11 @@ struct ContentView: View {
                 Section("Stack-based") {
                     stacks
                 }
-           }
+                
+                Section("Grid-based") {
+                    grids
+                }
+            }
 #if os(iOS)
             .navigationTitle(title)
 #endif
@@ -137,36 +136,47 @@ struct ContentView: View {
     
     private func row(element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
-            Text(element.id ?? "")
-                .padding(columnPadding)
-            Text(element.name ?? "")
-                .padding(columnPadding)
-            Text(String(format: "%.0f g", element.weight))
-                .padding(columnPadding)
+            rowItems(element: element)
         }
         .modifier(menu(element))
+    }
+    
+    //TODO menu support
+    @ViewBuilder
+    private func rowItems(element: Fruit) -> some View {
+        Text(element.id ?? "")
+            .padding(columnPadding)
+        Text(element.name ?? "")
+            .padding(columnPadding)
+        Text(String(format: "%.0f g", element.weight))
+            .padding(columnPadding)
     }
     
     // BOUND value row (with direct editing and auto-save)
     // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
     private func brow(element: ProjectedValue) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
-            Text(element.id.wrappedValue ?? "")
-                .padding(columnPadding)
-            TextField("Name",
-                      text: Binding(element.name, replacingNilWith: ""),
-                      onCommit: commitAction)
-                .textFieldStyle(.roundedBorder)
-                .border(Color.secondary)
-                .padding(columnPadding)
-            TextField("Weight",
-                      value: element.weight,
-                      formatter: NumberFormatter(),
-                      onCommit: commitAction)
-                .textFieldStyle(.roundedBorder)
-                .border(Color.secondary)
-                .padding(columnPadding)
+            browItems(element: element)
         }
+    }
+    
+    @ViewBuilder
+    private func browItems(element: ProjectedValue) -> some View {
+        Text(element.id.wrappedValue ?? "")
+            .padding(columnPadding)
+        TextField("Name",
+                  text: Binding(element.name, replacingNilWith: ""),
+                  onCommit: commitAction)
+            .textFieldStyle(.roundedBorder)
+            .border(Color.secondary)
+            .padding(columnPadding)
+        TextField("Weight",
+                  value: element.weight,
+                  formatter: NumberFormatter(),
+                  onCommit: commitAction)
+            .textFieldStyle(.roundedBorder)
+            .border(Color.secondary)
+            .padding(columnPadding)
     }
     
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
@@ -200,7 +210,20 @@ struct ContentView: View {
         NavigationLink("TablerStack1C") { stack1CView.toolbar { myToolbar }}
     }
     
-
+    @ViewBuilder
+    private var grids: some View {
+        NavigationLink("TablerGrid"  ) { gridView  .toolbar { myToolbar }}
+        NavigationLink("TablerGridC" ) { gridCView .toolbar { myToolbar }}
+    }
+    
+    private var myToolbar: FruitToolbar {
+        FruitToolbar(headerize: $headerize,
+                     onLoad: loadAction,
+                     onClear: clearAction,
+                     onAdd: addAction,
+                     onEdit: editAction)
+    }
+    
     // MARK: - List Views
     
     private var listView: some View {
@@ -372,6 +395,40 @@ struct ContentView: View {
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
     
+    // MARK: - Grid Views
+    
+    private var gridView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerGrid(gridConfig,
+                           header: header,
+                           row: rowItems,
+                           results: fruits)
+            } else {
+                TablerGrid(gridConfig,
+                           row: rowItems,
+                           results: fruits)
+            }
+        }
+    }
+    
+    private var gridCView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerGridC(gridConfig,
+                             header: header,
+                             row: browItems,
+                             results: fruits)
+            } else {
+                TablerGridC(gridConfig,
+                             row: browItems,
+                             results: fruits)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+
     // MARK: - Menus
     
 #if os(macOS)

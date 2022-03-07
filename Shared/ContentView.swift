@@ -40,6 +40,7 @@ struct ContentView: View {
     @State private var toEdit: Fruit? = nil
     @State private var isAdd: Bool = false
     @State private var headerize: Bool = true
+    @State private var hovered: Fruit.ID? = nil
     
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.name, order: .forward)],
@@ -54,15 +55,15 @@ struct ContentView: View {
     ]}
     
     private var listConfig: TablerListConfig<Fruit> {
-        TablerListConfig<Fruit>()
+        TablerListConfig<Fruit>(onHover: hoverAction)
     }
     
     private var stackConfig: TablerStackConfig<Fruit> {
-        TablerStackConfig<Fruit>()
+        TablerStackConfig<Fruit>(onHover: hoverAction)
     }
     
     private var gridConfig: TablerGridConfig<Fruit> {
-        TablerGridConfig<Fruit>(gridItems: gridItems)
+        TablerGridConfig<Fruit>(gridItems: gridItems, onHover: hoverAction)
     }
     
     private var detailerConfig: DetailerConfig<Fruit> {
@@ -247,6 +248,23 @@ struct ContentView: View {
                      onEdit: editAction)
     }
     
+    
+    // single-select row background
+    private func singleSelectBack(fruit: Fruit) -> some View {
+        RoundedRectangle(cornerRadius: 5)
+            .fill(Color.accentColor.opacity(selected == fruit.id ? 1 : (hovered == fruit.id ? 0.2 : 0.0)))
+    }
+    
+    // multi-select row background
+    private func multiSelectBack(fruit: Fruit) -> some View {
+        RoundedRectangle(cornerRadius: 5)
+            .fill(Color.accentColor.opacity(mselected.contains(fruit.id) ? 1 : (hovered == fruit.id ? 0.2 : 0.0)))
+    }
+    
+    private func rowBackground(fruit: Fruit) -> some View {
+        RoundedRectangle(cornerRadius: 5)
+            .fill(Color.accentColor.opacity(hovered == fruit.id ? 0.2 : 0.0))
+    }
 
     // MARK: - Menus
 
@@ -387,6 +405,10 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
+    
+    private func hoverAction(fruit: Fruit, isHovered: Bool) {
+        if isHovered { hovered = fruit.id } else { hovered = nil }
+    }
 }
 
 extension ContentView {
@@ -398,10 +420,12 @@ extension ContentView {
                 TablerList(listConfig,
                            header: header,
                            row: listRow,
+                           rowBackground: rowBackground,
                            results: fruits)
             } else {
                 TablerList(listConfig,
                            row: listRow,
+                           rowBackground: rowBackground,
                            results: fruits)
             }
         }
@@ -413,11 +437,13 @@ extension ContentView {
                 TablerList1(listConfig,
                             header: header,
                             row: listRow,
+                            rowBackground: rowBackground,
                             results: fruits,
                             selected: $selected)
             } else {
                 TablerList1(listConfig,
                             row: listRow,
+                            rowBackground: rowBackground,
                             results: fruits,
                             selected: $selected)
             }
@@ -430,11 +456,13 @@ extension ContentView {
                 TablerListM(listConfig,
                             header: header,
                             row: listRow,
+                            rowBackground: rowBackground,
                             results: fruits,
                             selected: $mselected)
             } else {
                 TablerListM(listConfig,
                             row: listRow,
+                            rowBackground: rowBackground,
                             results: fruits,
                             selected: $mselected)
             }
@@ -447,10 +475,12 @@ extension ContentView {
                 TablerListC(listConfig,
                             header: header,
                             row: listBrow,
+                            rowBackground: rowBackground,
                             results: fruits)
             } else {
                 TablerListC(listConfig,
                             row: listBrow,
+                            rowBackground: rowBackground,
                             results: fruits)
             }
         }
@@ -463,11 +493,13 @@ extension ContentView {
                 TablerList1C(listConfig,
                              header: header,
                              row: listBrow,
+                             rowBackground: rowBackground,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerList1C(listConfig,
                              row: listBrow,
+                             rowBackground: rowBackground,
                              results: fruits,
                              selected: $selected)
             }
@@ -481,11 +513,13 @@ extension ContentView {
                 TablerListMC(listConfig,
                              header: header,
                              row: listBrow,
+                             rowBackground: rowBackground,
                              results: fruits,
                              selected: $mselected)
             } else {
                 TablerListMC(listConfig,
                              row: listBrow,
+                             rowBackground: rowBackground,
                              results: fruits,
                              selected: $mselected)
             }
@@ -501,10 +535,12 @@ extension ContentView {
                 TablerStack(stackConfig,
                             header: header,
                             row: nonListRow,
+                            rowBackground: rowBackground,
                             results: fruits)
             } else {
                 TablerStack(stackConfig,
                             row: nonListRow,
+                            rowBackground: rowBackground,
                             results: fruits)
             }
         }
@@ -555,10 +591,12 @@ extension ContentView {
                 TablerStackC(stackConfig,
                              header: header,
                              row: nonListBrow,
+                             rowBackground: rowBackground,
                              results: fruits)
             } else {
                 TablerStackC(stackConfig,
                              row: nonListBrow,
+                             rowBackground: rowBackground,
                              results: fruits)
             }
         }
@@ -613,10 +651,12 @@ extension ContentView {
                 TablerGrid(gridConfig,
                            header: header,
                            row: rowItems,
+                           rowBackground: rowBackground,
                            results: fruits)
             } else {
                 TablerGrid(gridConfig,
                            row: rowItems,
+                           rowBackground: rowBackground,
                            results: fruits)
             }
         }
@@ -628,10 +668,12 @@ extension ContentView {
                 TablerGridC(gridConfig,
                             header: header,
                             row: browItems,
+                            rowBackground: rowBackground,
                             results: fruits)
             } else {
                 TablerGridC(gridConfig,
                             row: browItems,
+                            rowBackground: rowBackground,
                             results: fruits)
             }
         }
@@ -715,19 +757,6 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
-    // single-select row background
-    private func singleSelectBack(fruit: Fruit) -> some View {
-        RoundedRectangle(cornerRadius: 5)
-            .fill(selected == fruit.id ? Color.accentColor : Color.clear)
-    }
-    
-    // multi-select row background
-    private func multiSelectBack(fruit: Fruit) -> some View {
-        RoundedRectangle(cornerRadius: 5)
-            .fill(mselected.contains(fruit.id) ? Color.accentColor : Color.clear)
-    }
-    
 }
 
 struct ContentView_Previews: PreviewProvider {

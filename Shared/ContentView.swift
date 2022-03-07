@@ -134,14 +134,22 @@ struct ContentView: View {
         }
     }
     
-    private func row(element: Fruit) -> some View {
+    // non-bound row for List, supporting context menu on macOS and swipe menu on iOS
+    private func listRow(element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             rowItems(element: element)
         }
-        .modifier(menu(element))
+        .modifier(listMenu(element))
     }
     
-    //TODO menu support
+    // non-bound row for Stack and Grid, only supporting context menu
+    private func nonListRow(element: Fruit) -> some View {
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            rowItems(element: element)
+        }
+        .modifier(contextMenu(element))
+    }
+    
     @ViewBuilder
     private func rowItems(element: Fruit) -> some View {
         Text(element.id ?? "")
@@ -151,13 +159,22 @@ struct ContentView: View {
         Text(String(format: "%.0f g", element.weight))
             .padding(columnPadding)
     }
-    
-    // BOUND value row (with direct editing and auto-save)
-    // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
-    private func brow(element: ProjectedValue) -> some View {
+
+    // bound row for List, supporting context menu on macOS and swipe menu on iOS
+    private func listBrow(element: ProjectedValue) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             browItems(element: element)
         }
+        //TODO .modifier(listMenu(element))
+    }
+
+    // bound row for Stack and Grid, only supporting context menu
+    // See the `.onDisappear(perform: commitAction)` above to auto-save for tab-switching.
+    private func nonListBrow(element: ProjectedValue) -> some View {
+        LazyVGrid(columns: gridItems, alignment: .leading) {
+            browItems(element: element)
+        }
+        //TODO .modifier(contextMenu(element))
     }
     
     @ViewBuilder
@@ -206,16 +223,20 @@ struct ContentView: View {
     private var stacks: some View {
         NavigationLink("TablerStack"  ) { stackView  .toolbar { myToolbar }}
         NavigationLink("TablerStack1" ) { stack1View .toolbar { myToolbar }}
+        NavigationLink("TablerStackM" ) { stackMView .toolbar { myToolbar }}
         NavigationLink("TablerStackC" ) { stackCView .toolbar { myToolbar }}
         NavigationLink("TablerStack1C") { stack1CView.toolbar { myToolbar }}
+        NavigationLink("TablerStackMC") { stackMCView.toolbar { myToolbar }}
     }
     
     @ViewBuilder
     private var grids: some View {
         NavigationLink("TablerGrid"  ) { gridView  .toolbar { myToolbar }}
-        NavigationLink("TablerGrid1"  ) { gridView  .toolbar { myToolbar }}
+        NavigationLink("TablerGrid1"  ) { grid1View  .toolbar { myToolbar }}
+        NavigationLink("TablerGridM"  ) { gridMView  .toolbar { myToolbar }}
         NavigationLink("TablerGridC" ) { gridCView .toolbar { myToolbar }}
-        NavigationLink("TablerGrid1C" ) { gridCView .toolbar { myToolbar }}
+        NavigationLink("TablerGrid1C" ) { grid1CView .toolbar { myToolbar }}
+        NavigationLink("TablerGridMC" ) { gridMCView .toolbar { myToolbar }}
     }
     
     private var myToolbar: FruitToolbar {
@@ -233,11 +254,11 @@ struct ContentView: View {
             if headerize {
                 TablerList(listConfig,
                            header: header,
-                           row: row,
+                           row: listRow,
                            results: fruits)
             } else {
                 TablerList(listConfig,
-                           row: row,
+                           row: listRow,
                            results: fruits)
             }
         }
@@ -248,12 +269,12 @@ struct ContentView: View {
             if headerize {
                 TablerList1(listConfig,
                             header: header,
-                            row: row,
+                            row: listRow,
                             results: fruits,
                             selected: $selected)
             } else {
                 TablerList1(listConfig,
-                            row: row,
+                            row: listRow,
                             results: fruits,
                             selected: $selected)
             }
@@ -265,12 +286,12 @@ struct ContentView: View {
             if headerize {
                 TablerListM(listConfig,
                             header: header,
-                            row: row,
+                            row: listRow,
                             results: fruits,
                             selected: $mselected)
             } else {
                 TablerListM(listConfig,
-                            row: row,
+                            row: listRow,
                             results: fruits,
                             selected: $mselected)
             }
@@ -282,11 +303,11 @@ struct ContentView: View {
             if headerize {
                 TablerListC(listConfig,
                             header: header,
-                            row: brow,
+                            row: listBrow,
                             results: fruits)
             } else {
                 TablerListC(listConfig,
-                            row: brow,
+                            row: listBrow,
                             results: fruits)
             }
         }
@@ -298,12 +319,12 @@ struct ContentView: View {
             if headerize {
                 TablerList1C(listConfig,
                              header: header,
-                             row: brow,
+                             row: listBrow,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerList1C(listConfig,
-                             row: brow,
+                             row: listBrow,
                              results: fruits,
                              selected: $selected)
             }
@@ -316,12 +337,12 @@ struct ContentView: View {
             if headerize {
                 TablerListMC(listConfig,
                              header: header,
-                             row: brow,
+                             row: listBrow,
                              results: fruits,
                              selected: $mselected)
             } else {
                 TablerListMC(listConfig,
-                             row: brow,
+                             row: listBrow,
                              results: fruits,
                              selected: $mselected)
             }
@@ -336,11 +357,11 @@ struct ContentView: View {
             if headerize {
                 TablerStack(stackConfig,
                             header: header,
-                            row: row,
+                            row: nonListRow,
                             results: fruits)
             } else {
                 TablerStack(stackConfig,
-                            row: row,
+                            row: nonListRow,
                             results: fruits)
             }
         }
@@ -351,30 +372,50 @@ struct ContentView: View {
             if headerize {
                 TablerStack1(stackConfig,
                              header: header,
-                             row: row,
-                             rowBackground: selectRowBackgroundAction,
+                             row: nonListRow,
+                             rowBackground: singleSelectBack,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerStack1(stackConfig,
-                             row: row,
-                             rowBackground: selectRowBackgroundAction,
+                             row: nonListRow,
+                             rowBackground: singleSelectBack,
                              results: fruits,
                              selected: $selected)
             }
         }
     }
     
+    private var stackMView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerStackM(stackConfig,
+                             header: header,
+                             row: nonListRow,
+                             rowBackground: multiSelectBack,
+                             results: fruits,
+                             selected: $mselected)
+            } else {
+                TablerStackM(stackConfig,
+                             row: nonListRow,
+                             rowBackground: multiSelectBack,
+                             results: fruits,
+                             selected: $mselected)
+            }
+        }
+    }
+
+    
     private var stackCView: some View {
         SidewaysScroller(minWidth: minWidth) {
             if headerize {
                 TablerStackC(stackConfig,
                              header: header,
-                             row: brow,
+                             row: nonListBrow,
                              results: fruits)
             } else {
                 TablerStackC(stackConfig,
-                             row: brow,
+                             row: nonListBrow,
                              results: fruits)
             }
         }
@@ -386,16 +427,36 @@ struct ContentView: View {
             if headerize {
                 TablerStack1C(stackConfig,
                               header: header,
-                              row: brow,
-                              rowBackground: selectRowBackgroundAction,
+                              row: nonListBrow,
+                              rowBackground: singleSelectBack,
                               results: fruits,
                               selected: $selected)
             } else {
                 TablerStack1C(stackConfig,
-                              row: brow,
-                              rowBackground: selectRowBackgroundAction,
+                              row: nonListBrow,
+                              rowBackground: singleSelectBack,
                               results: fruits,
                               selected: $selected)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+    private var stackMCView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerStackMC(stackConfig,
+                              header: header,
+                              row: nonListBrow,
+                              rowBackground: multiSelectBack,
+                              results: fruits,
+                              selected: $mselected)
+            } else {
+                TablerStackMC(stackConfig,
+                              row: nonListBrow,
+                              rowBackground: multiSelectBack,
+                              results: fruits,
+                              selected: $mselected)
             }
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
@@ -440,15 +501,34 @@ struct ContentView: View {
                 TablerGrid1(gridConfig,
                             header: header,
                             row: rowItems,
-                            rowBackground: selectRowBackgroundAction,
+                            rowBackground: singleSelectBack,
                             results: fruits,
                             selected: $selected)
             } else {
                 TablerGrid1(gridConfig,
                             row: rowItems,
-                            rowBackground: selectRowBackgroundAction,
+                            rowBackground: singleSelectBack,
                             results: fruits,
                             selected: $selected)
+            }
+        }
+    }
+    
+    private var gridMView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerGridM(gridConfig,
+                            header: header,
+                            row: rowItems,
+                            rowBackground: multiSelectBack,
+                            results: fruits,
+                            selected: $mselected)
+            } else {
+                TablerGridM(gridConfig,
+                            row: rowItems,
+                            rowBackground: multiSelectBack,
+                            results: fruits,
+                            selected: $mselected)
             }
         }
     }
@@ -459,28 +539,64 @@ struct ContentView: View {
                 TablerGrid1C(gridConfig,
                              header: header,
                              row: browItems,
-                             rowBackground: selectRowBackgroundAction,
+                             rowBackground: singleSelectBack,
                              results: fruits,
                              selected: $selected)
             } else {
                 TablerGrid1C(gridConfig,
                              row: browItems,
-                             rowBackground: selectRowBackgroundAction,
+                             rowBackground: singleSelectBack,
                              results: fruits,
                              selected: $selected)
             }
         }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
     }
     
-    private func selectRowBackgroundAction(fruit: Fruit) -> some View {
+    private var gridMCView: some View {
+        SidewaysScroller(minWidth: minWidth) {
+            if headerize {
+                TablerGridMC(gridConfig,
+                             header: header,
+                             row: browItems,
+                             rowBackground: multiSelectBack,
+                             results: fruits,
+                             selected: $mselected)
+            } else {
+                TablerGridMC(gridConfig,
+                             row: browItems,
+                             rowBackground: multiSelectBack,
+                             results: fruits,
+                             selected: $mselected)
+            }
+        }
+        .onDisappear(perform: commitAction) // auto-save any pending changes
+    }
+    
+    // single-select row background
+    private func singleSelectBack(fruit: Fruit) -> some View {
         RoundedRectangle(cornerRadius: 5)
-            .fill(fruit.id == selected ? Color.accentColor : Color.clear)
+            .fill(selected == fruit.id ? Color.accentColor : Color.clear)
+    }
+    
+    // multi-select row background
+    private func multiSelectBack(fruit: Fruit) -> some View {
+        RoundedRectangle(cornerRadius: 5)
+            .fill(mselected.contains(fruit.id) ? Color.accentColor : Color.clear)
     }
     
     // MARK: - Menus
-    
+
+    private func contextMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
+        EditDetailerContextMenu(fruit,
+                                canDelete: detailerConfig.canDelete,
+                                onDelete: detailerConfig.onDelete,
+                                canEdit: detailerConfig.canEdit,
+                                onEdit: editAction)
+    }
+
 #if os(macOS)
-    private func menu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
+    private func listMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
         EditDetailerContextMenu(fruit,
                                 canDelete: detailerConfig.canDelete,
                                 onDelete: detailerConfig.onDelete,
@@ -488,7 +604,7 @@ struct ContentView: View {
                                 onEdit: editAction)
     }
 #elseif os(iOS)
-    private func menu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
+    private func listMenu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
         EditDetailerSwipeMenu(fruit,
                               canDelete: detailerConfig.canDelete,
                               onDelete: detailerConfig.onDelete,

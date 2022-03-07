@@ -120,14 +120,17 @@ struct ContentView: View {
     private func header(ctx: Binding<Context>) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Sort.columnTitle("ID", ctx, \.id)
+                .contentShape(Rectangle())
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.id)] }
                 .padding(columnPadding)
                 .background(headerBackground)
             Sort.columnTitle("Name", ctx, \.name)
+                .contentShape(Rectangle())
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.name)] }
                 .padding(columnPadding)
                 .background(headerBackground)
             Sort.columnTitle("Weight", ctx, \.weight)
+                .contentShape(Rectangle())
                 .onTapGesture { fruits.sortDescriptors = [tablerSort(ctx, \.weight)] }
                 .padding(columnPadding)
                 .background(headerBackground)

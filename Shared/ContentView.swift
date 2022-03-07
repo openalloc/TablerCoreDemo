@@ -247,6 +247,149 @@ struct ContentView: View {
                      onEdit: editAction)
     }
     
+
+    // MARK: - Menus
+
+    private func contextMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
+        EditDetailerContextMenu(fruit,
+                                canDelete: detailerConfig.canDelete,
+                                onDelete: detailerConfig.onDelete,
+                                canEdit: detailerConfig.canEdit,
+                                onEdit: editAction)
+    }
+
+#if os(macOS)
+    private func listMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
+        EditDetailerContextMenu(fruit,
+                                canDelete: detailerConfig.canDelete,
+                                onDelete: detailerConfig.onDelete,
+                                canEdit: detailerConfig.canEdit,
+                                onEdit: editAction)
+    }
+#elseif os(iOS)
+    private func listMenu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
+        EditDetailerSwipeMenu(fruit,
+                              canDelete: detailerConfig.canDelete,
+                              onDelete: detailerConfig.onDelete,
+                              canEdit: detailerConfig.canEdit,
+                              onEdit: editAction)
+    }
+#endif
+    
+    // MARK: - Helpers
+    
+    private func get(for id: Fruit.ID?) -> [Fruit] {
+        guard let _id = id else { return [] }
+        do {
+            let fr = NSFetchRequest<Fruit>.init(entityName: "Fruit")
+            fr.predicate = NSPredicate(format: "id == %@", _id!)
+            return try viewContext.fetch(fr)
+        } catch {
+            let nsError = error as NSError
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        return []
+    }
+    
+    // MARK: - Action Handlers
+    
+    // supporting "auto-save" of direct modifications
+    private func commitAction() {
+        do {
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+    
+    private func addAction() {
+        if childContext == nil {
+            print("\(#function) saving child context to state variable")
+            childContext = viewContext.childContext()
+        }
+        let childsFruit = Fruit(context: childContext!)
+        isAdd = true                // NOTE cleared on dismissal of detail sheet
+        toEdit = childsFruit
+    }
+    
+    private func editAction() {
+        // TODO make work with multi-select too
+        editAction(selected)
+    }
+    
+    private func editAction(_ id: Fruit.ID?) {
+        guard let _id = id else { return }
+        guard let fruit = get(for: _id).first else { return }
+        editAction(fruit)
+    }
+    
+    private func editAction(_ fruit: Fruit) {
+        if childContext == nil {
+            print("\(#function) saving child context to state variable")
+            childContext = viewContext.childContext()
+        }
+        let childsFruit = childContext!.object(with: fruit.objectID) as! Fruit
+        isAdd = false
+        toEdit = childsFruit
+    }
+    
+    private func detailCancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+        guard let moc = self.childContext else {
+            print("\(#function): child context not found")
+            return
+        }
+        
+        if moc.hasChanges { moc.rollback() }
+    }
+    
+    /// Note the parent context must ALSO be saved to persist the changes of its child.
+    private func detailSaveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
+        guard let moc = self.childContext else {
+            print("\(#function): child context not found")
+            //moc.rollback()
+            return
+        }
+        
+        do {
+            if moc.hasChanges {
+                try moc.save()
+                try viewContext.save()
+            }
+        } catch {
+            let nsError = error as NSError
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+    
+    private func deleteAction(_ fruit: Fruit) {
+        let _fruit = get(for: fruit.id)
+        guard _fruit.count > 0 else { return }
+        do {
+            _fruit.forEach { viewContext.delete($0) }
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+    
+    private func loadAction() {
+        FruitBase.loadSampleData(viewContext)
+    }
+    
+    private func clearAction() {
+        do {
+            fruits.forEach { viewContext.delete($0) }
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+}
+
+extension ContentView {
     // MARK: - List Views
     
     private var listView: some View {
@@ -585,145 +728,6 @@ struct ContentView: View {
             .fill(mselected.contains(fruit.id) ? Color.accentColor : Color.clear)
     }
     
-    // MARK: - Menus
-
-    private func contextMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
-        EditDetailerContextMenu(fruit,
-                                canDelete: detailerConfig.canDelete,
-                                onDelete: detailerConfig.onDelete,
-                                canEdit: detailerConfig.canEdit,
-                                onEdit: editAction)
-    }
-
-#if os(macOS)
-    private func listMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
-        EditDetailerContextMenu(fruit,
-                                canDelete: detailerConfig.canDelete,
-                                onDelete: detailerConfig.onDelete,
-                                canEdit: detailerConfig.canEdit,
-                                onEdit: editAction)
-    }
-#elseif os(iOS)
-    private func listMenu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
-        EditDetailerSwipeMenu(fruit,
-                              canDelete: detailerConfig.canDelete,
-                              onDelete: detailerConfig.onDelete,
-                              canEdit: detailerConfig.canEdit,
-                              onEdit: editAction)
-    }
-#endif
-    
-    // MARK: - Helpers
-    
-    private func get(for id: Fruit.ID?) -> [Fruit] {
-        guard let _id = id else { return [] }
-        do {
-            let fr = NSFetchRequest<Fruit>.init(entityName: "Fruit")
-            fr.predicate = NSPredicate(format: "id == %@", _id!)
-            return try viewContext.fetch(fr)
-        } catch {
-            let nsError = error as NSError
-            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-        return []
-    }
-    
-    // MARK: - Action Handlers
-    
-    // supporting "auto-save" of direct modifications
-    private func commitAction() {
-        do {
-            try viewContext.save()
-        } catch {
-            let nsError = error as NSError
-            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-    }
-    
-    private func addAction() {
-        if childContext == nil {
-            print("\(#function) saving child context to state variable")
-            childContext = viewContext.childContext()
-        }
-        let childsFruit = Fruit(context: childContext!)
-        isAdd = true                // NOTE cleared on dismissal of detail sheet
-        toEdit = childsFruit
-    }
-    
-    private func editAction() {
-        // TODO make work with multi-select too
-        editAction(selected)
-    }
-    
-    private func editAction(_ id: Fruit.ID?) {
-        guard let _id = id else { return }
-        guard let fruit = get(for: _id).first else { return }
-        editAction(fruit)
-    }
-    
-    private func editAction(_ fruit: Fruit) {
-        if childContext == nil {
-            print("\(#function) saving child context to state variable")
-            childContext = viewContext.childContext()
-        }
-        let childsFruit = childContext!.object(with: fruit.objectID) as! Fruit
-        isAdd = false
-        toEdit = childsFruit
-    }
-    
-    private func detailCancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
-        guard let moc = self.childContext else {
-            print("\(#function): child context not found")
-            return
-        }
-        
-        if moc.hasChanges { moc.rollback() }
-    }
-    
-    /// Note the parent context must ALSO be saved to persist the changes of its child.
-    private func detailSaveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
-        guard let moc = self.childContext else {
-            print("\(#function): child context not found")
-            //moc.rollback()
-            return
-        }
-        
-        do {
-            if moc.hasChanges {
-                try moc.save()
-                try viewContext.save()
-            }
-        } catch {
-            let nsError = error as NSError
-            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-    }
-    
-    private func deleteAction(_ fruit: Fruit) {
-        let _fruit = get(for: fruit.id)
-        guard _fruit.count > 0 else { return }
-        do {
-            _fruit.forEach { viewContext.delete($0) }
-            try viewContext.save()
-        } catch {
-            let nsError = error as NSError
-            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-    }
-    
-    private func loadAction() {
-        FruitBase.loadSampleData(viewContext)
-    }
-    
-    private func clearAction() {
-        do {
-            fruits.forEach { viewContext.delete($0) }
-            try viewContext.save()
-        } catch {
-            let nsError = error as NSError
-            print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-    }
 }
 
 struct ContentView_Previews: PreviewProvider {

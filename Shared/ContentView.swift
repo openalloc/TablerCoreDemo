@@ -160,6 +160,21 @@ struct ContentView: View {
         Text(String(format: "%.0f g", element.weight))
             .padding(columnPadding)
     }
+    
+    // Redundant items for grid, where each item is individually menued.
+    // Not ideal, but no solution found yet.
+    @ViewBuilder
+    private func gridRowItems(element: Fruit) -> some View {
+        Text(element.id ?? "")
+            .padding(columnPadding)
+            .modifier(contextMenu(element))
+        Text(element.name ?? "")
+            .padding(columnPadding)
+            .modifier(contextMenu(element))
+        Text(String(format: "%.0f g", element.weight))
+            .padding(columnPadding)
+            .modifier(contextMenu(element))
+    }
 
     // bound row for List, supporting context menu on macOS and swipe menu on iOS
     private func listBrow(element: ProjectedValue) -> some View {
@@ -178,6 +193,7 @@ struct ContentView: View {
         //TODO .modifier(contextMenu(element))
     }
     
+    // No redundant items for grid, at least yet, so no bound grid menus
     @ViewBuilder
     private func browItems(element: ProjectedValue) -> some View {
         Text(element.id.wrappedValue ?? "")
@@ -650,12 +666,12 @@ extension ContentView {
             if headerize {
                 TablerGrid(gridConfig,
                            header: header,
-                           row: rowItems,
+                           row: gridRowItems,
                            rowBackground: rowBackground,
                            results: fruits)
             } else {
                 TablerGrid(gridConfig,
-                           row: rowItems,
+                           row: gridRowItems,
                            rowBackground: rowBackground,
                            results: fruits)
             }
@@ -685,13 +701,13 @@ extension ContentView {
             if headerize {
                 TablerGrid1(gridConfig,
                             header: header,
-                            row: rowItems,
+                            row: gridRowItems,
                             rowBackground: singleSelectBack,
                             results: fruits,
                             selected: $selected)
             } else {
                 TablerGrid1(gridConfig,
-                            row: rowItems,
+                            row: gridRowItems,
                             rowBackground: singleSelectBack,
                             results: fruits,
                             selected: $selected)
@@ -704,13 +720,13 @@ extension ContentView {
             if headerize {
                 TablerGridM(gridConfig,
                             header: header,
-                            row: rowItems,
+                            row: gridRowItems,
                             rowBackground: multiSelectBack,
                             results: fruits,
                             selected: $mselected)
             } else {
                 TablerGridM(gridConfig,
-                            row: rowItems,
+                            row: gridRowItems,
                             rowBackground: multiSelectBack,
                             results: fruits,
                             selected: $mselected)

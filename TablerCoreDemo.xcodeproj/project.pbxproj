@@ -25,6 +25,8 @@
 		402DF71127CDD2CC007082FD /* Detailer in Frameworks */ = {isa = PBXBuildFile; productRef = 402DF71027CDD2CC007082FD /* Detailer */; };
 		402DF71527CDE0D3007082FD /* Binding-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DF71427CDE0D3007082FD /* Binding-extension.swift */; };
 		402DF71627CDE0D3007082FD /* Binding-extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 402DF71427CDE0D3007082FD /* Binding-extension.swift */; };
+		402EE27527DD3BCD0094F2FA /* TablerScroller in Frameworks */ = {isa = PBXBuildFile; productRef = 402EE27427DD3BCD0094F2FA /* TablerScroller */; };
+		402EE27727DD3BD60094F2FA /* TablerScroller in Frameworks */ = {isa = PBXBuildFile; productRef = 402EE27627DD3BD60094F2FA /* TablerScroller */; };
 		409D654D27CCBBEF00DAE06A /* Tabler in Frameworks */ = {isa = PBXBuildFile; productRef = 409D654C27CCBBEF00DAE06A /* Tabler */; };
 		40A6668127D16ECA00C8F47A /* DetailerMenu in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6668027D16ECA00C8F47A /* DetailerMenu */; };
 		40A6668327D16ED200C8F47A /* DetailerMenu in Frameworks */ = {isa = PBXBuildFile; productRef = 40A6668227D16ED200C8F47A /* DetailerMenu */; };
@@ -62,6 +64,7 @@
 			files = (
 				40A6668327D16ED200C8F47A /* DetailerMenu in Frameworks */,
 				40A6668927D1753200C8F47A /* Detailer in Frameworks */,
+				402EE27527DD3BCD0094F2FA /* TablerScroller in Frameworks */,
 				409D654D27CCBBEF00DAE06A /* Tabler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,6 +75,7 @@
 			files = (
 				402DF71127CDD2CC007082FD /* Detailer in Frameworks */,
 				40A6668127D16ECA00C8F47A /* DetailerMenu in Frameworks */,
+				402EE27727DD3BD60094F2FA /* TablerScroller in Frameworks */,
 				40152D4327CC6E0800776E96 /* Tabler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -160,6 +164,7 @@
 				409D654C27CCBBEF00DAE06A /* Tabler */,
 				40A6668227D16ED200C8F47A /* DetailerMenu */,
 				40A6668827D1753200C8F47A /* Detailer */,
+				402EE27427DD3BCD0094F2FA /* TablerScroller */,
 			);
 			productName = "TablerCoreDemo (iOS)";
 			productReference = 40152D2427CC6DE100776E96 /* TablerCoreDemo.app */;
@@ -182,6 +187,7 @@
 				40152D4227CC6E0800776E96 /* Tabler */,
 				402DF71027CDD2CC007082FD /* Detailer */,
 				40A6668027D16ECA00C8F47A /* DetailerMenu */,
+				402EE27627DD3BD60094F2FA /* TablerScroller */,
 			);
 			productName = "TablerCoreDemo (macOS)";
 			productReference = 40152D2A27CC6DE100776E96 /* TablerCoreDemo.app */;
@@ -549,6 +555,14 @@
 		402DF71027CDD2CC007082FD /* Detailer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Detailer;
+		};
+		402EE27427DD3BCD0094F2FA /* TablerScroller */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TablerScroller;
+		};
+		402EE27627DD3BD60094F2FA /* TablerScroller */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TablerScroller;
 		};
 		409D654C27CCBBEF00DAE06A /* Tabler */ = {
 			isa = XCSwiftPackageProductDependency;

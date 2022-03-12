@@ -431,7 +431,7 @@ extension ContentView {
     // MARK: - List Views
     
     private var listView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerList(listConfig,
                            header: header,
@@ -448,7 +448,7 @@ extension ContentView {
     }
     
     private var list1View: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerList1(listConfig,
                             header: header,
@@ -467,7 +467,7 @@ extension ContentView {
     }
     
     private var listMView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerListM(listConfig,
                             header: header,
@@ -486,7 +486,7 @@ extension ContentView {
     }
     
     private var listCView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerListC(listConfig,
                             header: header,
@@ -504,7 +504,7 @@ extension ContentView {
     }
     
     private var list1CView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerList1C(listConfig,
                              header: header,
@@ -524,7 +524,7 @@ extension ContentView {
     }
     
     private var listMCView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerListMC(listConfig,
                              header: header,
@@ -546,7 +546,7 @@ extension ContentView {
     // MARK: - Stack Views
     
     private var stackView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerStack(stackConfig,
                             header: header,
@@ -563,7 +563,7 @@ extension ContentView {
     }
     
     private var stack1View: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerStack1(stackConfig,
                              header: header,
@@ -582,7 +582,7 @@ extension ContentView {
     }
     
     private var stackMView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerStackM(stackConfig,
                              header: header,
@@ -602,7 +602,7 @@ extension ContentView {
 
     
     private var stackCView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerStackC(stackConfig,
                              header: header,
@@ -620,7 +620,7 @@ extension ContentView {
     }
     
     private var stack1CView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerStack1C(stackConfig,
                               header: header,
@@ -640,7 +640,7 @@ extension ContentView {
     }
     
     private var stackMCView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerStackMC(stackConfig,
                               header: header,
@@ -662,7 +662,7 @@ extension ContentView {
     // MARK: - Grid Views
     
     private var gridView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerGrid(gridConfig,
                            header: header,
@@ -679,7 +679,7 @@ extension ContentView {
     }
     
     private var gridCView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerGridC(gridConfig,
                             header: header,
@@ -697,7 +697,7 @@ extension ContentView {
     }
     
     private var grid1View: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerGrid1(gridConfig,
                             header: header,
@@ -716,7 +716,7 @@ extension ContentView {
     }
     
     private var gridMView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerGridM(gridConfig,
                             header: header,
@@ -735,7 +735,7 @@ extension ContentView {
     }
     
     private var grid1CView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerGrid1C(gridConfig,
                              header: header,
@@ -755,7 +755,7 @@ extension ContentView {
     }
     
     private var gridMCView: some View {
-        TablerScroller(minWidth: minWidth) {
+        Sideways(minWidth: minWidth) {
             if headerize {
                 TablerGridMC(gridConfig,
                              header: header,

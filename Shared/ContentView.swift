@@ -39,7 +39,6 @@ struct ContentView: View {
     @State private var selected: Fruit.ID? = nil
     @State private var mselected = Set<Fruit.ID>()
     @State private var toEdit: Fruit? = nil
-    @State private var isAdd: Bool = false
     @State private var headerize: Bool = true
     @State private var hovered: Fruit.ID? = nil
     
@@ -344,7 +343,6 @@ struct ContentView: View {
             childContext = viewContext.childContext()
         }
         let childsFruit = Fruit(context: childContext!)
-        isAdd = true                // NOTE cleared on dismissal of detail sheet
         toEdit = childsFruit
     }
     
@@ -365,7 +363,6 @@ struct ContentView: View {
             childContext = viewContext.childContext()
         }
         let childsFruit = childContext!.object(with: fruit.objectID) as! Fruit
-        isAdd = false
         toEdit = childsFruit
     }
     

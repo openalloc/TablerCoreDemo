@@ -22,6 +22,7 @@ import CoreData
 import Tabler
 import Detailer
 import DetailerMenu
+import Sideways
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -101,7 +102,7 @@ struct ContentView: View {
 #endif
         .editDetailer(detailerConfig,
                       toEdit: $toEdit,
-                      isAdd: $isAdd,
+                      originalID: toEdit?.id,
                       detailContent: editDetail)
     }
     

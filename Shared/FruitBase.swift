@@ -27,13 +27,14 @@ struct FruitBase: Identifiable {
     init(_ id: String = "",
          _ name: String = "",
          _ weight: Double = 0,
-         _ color: Color = .gray) {
+         _ color: Color = .gray)
+    {
         self.id = id
         self.name = name
         self.weight = weight
         self.color = color
     }
-    
+
     static var bootstrap: [FruitBase] = [
         FruitBase("🍌", "Banana", 118, .brown),
         FruitBase("🍓", "Strawberry", 12, .red),
@@ -42,7 +43,7 @@ struct FruitBase: Identifiable {
         FruitBase("🍇", "Grape", 7, .purple),
         FruitBase("🫐", "Blueberry", 2, .blue),
     ]
-    
+
     static func loadSampleData(_ viewContext: NSManagedObjectContext) {
         do {
             for fruit in bootstrap {

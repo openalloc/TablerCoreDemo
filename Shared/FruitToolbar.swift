@@ -24,41 +24,41 @@ struct FruitToolbar: ToolbarContent {
     var onClear: () -> Void
     var onAdd: () -> Void
     var onEdit: () -> Void
-    
-    //private var toolbarGroup: ToolbarItemGroup {
+
+    // private var toolbarGroup: ToolbarItemGroup {
     var body: some ToolbarContent {
         ToolbarItemGroup {
             Toggle(isOn: $headerize) { Text("Header") }
             loadButton
             clearButton
-#if os(macOS)
-            editButton
-#endif
+            #if os(macOS)
+                editButton
+            #endif
             addButton
         }
     }
-    
+
     private var loadButton: some View {
         Button(action: {
             onLoad()
         }) { Text("Load Sample Data") }
     }
-    
+
     private var clearButton: some View {
         Button(action: {
             onClear()
         }) { Text("Clear") }
     }
-    
+
     private var editButton: some View {
         Button(action: {
-            //editAction(selected)
+            // editAction(selected)
             onEdit()
-        } ) {
+        }) {
             Text("Edit")
         }
     }
-    
+
     private var addButton: some View {
         Button(action: {
             onAdd()
@@ -66,5 +66,4 @@ struct FruitToolbar: ToolbarContent {
             Label("Add Item", systemImage: "plus")
         }
     }
-    
 }

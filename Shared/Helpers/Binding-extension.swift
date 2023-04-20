@@ -26,10 +26,10 @@ extension Binding where Value: Equatable {
             set: { newValue in
                 if newValue == nilValue {
                     source.wrappedValue = nil
-                }
-                else {
+                } else {
                     source.wrappedValue = newValue
                 }
-        })
+            }
+        )
     }
 }

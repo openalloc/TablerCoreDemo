@@ -16,98 +16,100 @@
 // limitations under the License.
 //
 
-import SwiftUI
 import CoreData
+import SwiftUI
 
-import Tabler
 import Detailer
 import DetailerMenu
+import Tabler
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    
+
     typealias Sort = TablerSort<Fruit>
     typealias Context = TablerContext<Fruit>
     typealias ProjectedValue = ObservedObject<Fruit>.Wrapper
-    
+
     private let columnSpacing: CGFloat = 10
     private let minWidth: CGFloat = 400
     private let title = "Tabler Core Data Demo"
-    
+
     @State private var childContext: NSManagedObjectContext? = nil
     @State private var selected: Fruit.ID? = nil
     @State private var mselected = Set<Fruit.ID>()
     @State private var toEdit: Fruit? = nil
     @State private var headerize: Bool = true
     @State private var hovered: Fruit.ID? = nil
-    
+
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.name, order: .forward)],
-        animation: .default)
+        animation: .default
+    )
     private var fruits: FetchedResults<Fruit>
-    
-    private var gridItems: [GridItem] {[
+
+    private var gridItems: [GridItem] { [
         GridItem(.flexible(minimum: 40, maximum: 60), spacing: columnSpacing, alignment: .leading),
         GridItem(.flexible(minimum: 100, maximum: 200), spacing: columnSpacing, alignment: .leading),
         GridItem(.flexible(minimum: 90, maximum: 100), spacing: columnSpacing, alignment: .trailing),
-        //GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),
-    ]}
-    
+        // GridItem(.flexible(minimum: 35, maximum: 50), spacing: columnSpacing, alignment: .leading),
+    ] }
+
     private var listConfig: TablerListConfig<Fruit> {
         TablerListConfig<Fruit>(onHover: hoverAction)
     }
-    
+
     private var stackConfig: TablerStackConfig<Fruit> {
         TablerStackConfig<Fruit>(onHover: hoverAction)
     }
-    
+
     private var gridConfig: TablerGridConfig<Fruit> {
         TablerGridConfig<Fruit>(gridItems: gridItems, onHover: hoverAction)
     }
-    
+
     private var detailerConfig: DetailerConfig<Fruit> {
         DetailerConfig<Fruit>(
             onDelete: deleteAction,
             onSave: detailSaveAction,
             onCancel: detailCancelAction,
-            titler: { _ in title })
+            titler: { _ in title }
+        )
     }
-    
+
     // MARK: - Views
-    
+
     var body: some View {
         NavigationView {
             List {
                 Section("List-based") {
                     lists
                 }
-                
+
                 Section("Stack-based") {
                     stacks
                 }
-                
+
                 Section("Grid-based") {
                     grids
                 }
             }
-#if os(iOS)
+            #if os(iOS)
             .navigationTitle(title)
-#endif
+            #endif
         }
         .navigationViewStyle(DoubleColumnNavigationViewStyle())
-#if os(macOS)
-        .navigationTitle(title)
-#endif
-        .editDetailer(detailerConfig,
-                      toEdit: $toEdit,
-                      originalID: toEdit?.id,
-                      detailContent: editDetail)
+        #if os(macOS)
+            .navigationTitle(title)
+        #endif
+            .editDetailer(detailerConfig,
+                          toEdit: $toEdit,
+                          originalID: toEdit?.id,
+                          detailContent: editDetail)
     }
-    
+
     private var columnPadding: EdgeInsets {
         EdgeInsets(top: 0, leading: 5, bottom: 0, trailing: 5)
     }
-    
+
     private var headerBackground: some View {
         RoundedRectangle(cornerRadius: 5)
             .fill(
@@ -116,7 +118,7 @@ struct ContentView: View {
                                endPoint: .bottom)
             )
     }
-    
+
     private func header(ctx: Binding<Context>) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             Sort.columnTitle("ID", ctx, \.id)
@@ -133,7 +135,7 @@ struct ContentView: View {
                 .background(headerBackground)
         }
     }
-    
+
     // non-bound row for List, supporting context menu on macOS and swipe menu on iOS
     private func listRow(element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
@@ -141,7 +143,7 @@ struct ContentView: View {
         }
         .modifier(listMenu(element))
     }
-    
+
     // non-bound row for Stack and Grid, only supporting context menu
     private func nonListRow(element: Fruit) -> some View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
@@ -149,7 +151,7 @@ struct ContentView: View {
         }
         .modifier(contextMenu(element))
     }
-    
+
     @ViewBuilder
     private func rowItems(element: Fruit) -> some View {
         Text(element.id ?? "")
@@ -159,7 +161,7 @@ struct ContentView: View {
         Text(String(format: "%.0f g", element.weight))
             .padding(columnPadding)
     }
-    
+
     // Redundant items for grid, where each item is individually menued.
     // Not ideal, but no solution found yet.
     @ViewBuilder
@@ -180,7 +182,7 @@ struct ContentView: View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             browItems(element: element)
         }
-        //TODO .modifier(listMenu(element))
+        // TODO: .modifier(listMenu(element))
     }
 
     // bound row for Stack and Grid, only supporting context menu
@@ -189,9 +191,9 @@ struct ContentView: View {
         LazyVGrid(columns: gridItems, alignment: .leading) {
             browItems(element: element)
         }
-        //TODO .modifier(contextMenu(element))
+        // TODO: .modifier(contextMenu(element))
     }
-    
+
     // No redundant items for grid, at least yet, so no bound grid menus
     @ViewBuilder
     private func browItems(element: ProjectedValue) -> some View {
@@ -211,7 +213,7 @@ struct ContentView: View {
             .border(Color.secondary)
             .padding(columnPadding)
     }
-    
+
     private func editDetail(ctx: DetailerContext<Fruit>, element: ProjectedValue) -> some View {
         Form {
             TextField("ID", text: Binding(element.id, replacingNilWith: ""))
@@ -221,40 +223,40 @@ struct ContentView: View {
             TextField("Weight", value: element.weight, formatter: NumberFormatter())
                 .validate(ctx, element.weight.wrappedValue, \.weight) { $0 > 0 }
             TextField("Color", text: Binding(element.color, replacingNilWith: "gray"))
-                .validate(ctx.config, true)  // spacer, for consistency
+                .validate(ctx.config, true) // spacer, for consistency
         }
     }
-    
+
     @ViewBuilder
     var lists: some View {
-        NavigationLink("TablerList"   ) { listView  .toolbar { myToolbar }}
-        NavigationLink("TablerList1"  ) { list1View .toolbar { myToolbar }}
-        NavigationLink("TablerListM"  ) { listMView .toolbar { myToolbar }}
-        NavigationLink("TablerListC"  ) { listCView .toolbar { myToolbar }}
-        NavigationLink("TablerList1C" ) { list1CView.toolbar { myToolbar }}
-        NavigationLink("TablerListMC" ) { listMCView.toolbar { myToolbar }}
+        NavigationLink("TablerList") { listView.toolbar { myToolbar }}
+        NavigationLink("TablerList1") { list1View.toolbar { myToolbar }}
+        NavigationLink("TablerListM") { listMView.toolbar { myToolbar }}
+        NavigationLink("TablerListC") { listCView.toolbar { myToolbar }}
+        NavigationLink("TablerList1C") { list1CView.toolbar { myToolbar }}
+        NavigationLink("TablerListMC") { listMCView.toolbar { myToolbar }}
     }
-    
+
     @ViewBuilder
     private var stacks: some View {
-        NavigationLink("TablerStack"  ) { stackView  .toolbar { myToolbar }}
-        NavigationLink("TablerStack1" ) { stack1View .toolbar { myToolbar }}
-        NavigationLink("TablerStackM" ) { stackMView .toolbar { myToolbar }}
-        NavigationLink("TablerStackC" ) { stackCView .toolbar { myToolbar }}
+        NavigationLink("TablerStack") { stackView.toolbar { myToolbar }}
+        NavigationLink("TablerStack1") { stack1View.toolbar { myToolbar }}
+        NavigationLink("TablerStackM") { stackMView.toolbar { myToolbar }}
+        NavigationLink("TablerStackC") { stackCView.toolbar { myToolbar }}
         NavigationLink("TablerStack1C") { stack1CView.toolbar { myToolbar }}
         NavigationLink("TablerStackMC") { stackMCView.toolbar { myToolbar }}
     }
-    
+
     @ViewBuilder
     private var grids: some View {
-        NavigationLink("TablerGrid"  ) { gridView  .toolbar { myToolbar }}
-        NavigationLink("TablerGrid1"  ) { grid1View  .toolbar { myToolbar }}
-        NavigationLink("TablerGridM"  ) { gridMView  .toolbar { myToolbar }}
-        NavigationLink("TablerGridC" ) { gridCView .toolbar { myToolbar }}
-        NavigationLink("TablerGrid1C" ) { grid1CView .toolbar { myToolbar }}
-        NavigationLink("TablerGridMC" ) { gridMCView .toolbar { myToolbar }}
+        NavigationLink("TablerGrid") { gridView.toolbar { myToolbar }}
+        NavigationLink("TablerGrid1") { grid1View.toolbar { myToolbar }}
+        NavigationLink("TablerGridM") { gridMView.toolbar { myToolbar }}
+        NavigationLink("TablerGridC") { gridCView.toolbar { myToolbar }}
+        NavigationLink("TablerGrid1C") { grid1CView.toolbar { myToolbar }}
+        NavigationLink("TablerGridMC") { gridMCView.toolbar { myToolbar }}
     }
-    
+
     private var myToolbar: FruitToolbar {
         FruitToolbar(headerize: $headerize,
                      onLoad: loadAction,
@@ -262,20 +264,19 @@ struct ContentView: View {
                      onAdd: addAction,
                      onEdit: editAction)
     }
-    
-    
+
     // single-select row background
     private func singleSelectBack(fruit: Fruit) -> some View {
         RoundedRectangle(cornerRadius: 5)
             .fill(Color.accentColor.opacity(selected == fruit.id ? 1 : (hovered == fruit.id ? 0.2 : 0.0)))
     }
-    
+
     // multi-select row background
     private func multiSelectBack(fruit: Fruit) -> some View {
         RoundedRectangle(cornerRadius: 5)
             .fill(Color.accentColor.opacity(mselected.contains(fruit.id) ? 1 : (hovered == fruit.id ? 0.2 : 0.0)))
     }
-    
+
     private func rowBackground(fruit: Fruit) -> some View {
         RoundedRectangle(cornerRadius: 5)
             .fill(Color.accentColor.opacity(hovered == fruit.id ? 0.2 : 0.0))
@@ -291,26 +292,27 @@ struct ContentView: View {
                                 onEdit: editAction)
     }
 
-#if os(macOS)
-    private func listMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
-        EditDetailerContextMenu(fruit,
-                                canDelete: detailerConfig.canDelete,
-                                onDelete: detailerConfig.onDelete,
-                                canEdit: detailerConfig.canEdit,
-                                onEdit: editAction)
-    }
-#elseif os(iOS)
-    private func listMenu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
-        EditDetailerSwipeMenu(fruit,
-                              canDelete: detailerConfig.canDelete,
-                              onDelete: detailerConfig.onDelete,
-                              canEdit: detailerConfig.canEdit,
-                              onEdit: editAction)
-    }
-#endif
-    
+    #if os(macOS)
+        private func listMenu(_ fruit: Fruit) -> EditDetailerContextMenu<Fruit> {
+            EditDetailerContextMenu(fruit,
+                                    canDelete: detailerConfig.canDelete,
+                                    onDelete: detailerConfig.onDelete,
+                                    canEdit: detailerConfig.canEdit,
+                                    onEdit: editAction)
+        }
+
+    #elseif os(iOS)
+        private func listMenu(_ fruit: Fruit) -> EditDetailerSwipeMenu<Fruit> {
+            EditDetailerSwipeMenu(fruit,
+                                  canDelete: detailerConfig.canDelete,
+                                  onDelete: detailerConfig.onDelete,
+                                  canEdit: detailerConfig.canEdit,
+                                  onEdit: editAction)
+        }
+    #endif
+
     // MARK: - Helpers
-    
+
     private func get(for id: Fruit.ID?) -> [Fruit] {
         guard let _id = id else { return [] }
         do {
@@ -323,9 +325,9 @@ struct ContentView: View {
         }
         return []
     }
-    
+
     // MARK: - Action Handlers
-    
+
     // supporting "auto-save" of direct modifications
     private func commitAction() {
         do {
@@ -335,7 +337,7 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-    
+
     private func addAction() {
         if childContext == nil {
             print("\(#function) saving child context to state variable")
@@ -344,18 +346,18 @@ struct ContentView: View {
         let childsFruit = Fruit(context: childContext!)
         toEdit = childsFruit
     }
-    
+
     private func editAction() {
-        // TODO make work with multi-select too
+        // TODO: make work with multi-select too
         editAction(selected)
     }
-    
+
     private func editAction(_ id: Fruit.ID?) {
         guard let _id = id else { return }
         guard let fruit = get(for: _id).first else { return }
         editAction(fruit)
     }
-    
+
     private func editAction(_ fruit: Fruit) {
         if childContext == nil {
             print("\(#function) saving child context to state variable")
@@ -364,24 +366,24 @@ struct ContentView: View {
         let childsFruit = childContext!.object(with: fruit.objectID) as! Fruit
         toEdit = childsFruit
     }
-    
-    private func detailCancelAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
-        guard let moc = self.childContext else {
+
+    private func detailCancelAction(_: DetailerContext<Fruit>, _: Fruit) {
+        guard let moc = childContext else {
             print("\(#function): child context not found")
             return
         }
-        
+
         if moc.hasChanges { moc.rollback() }
     }
-    
+
     /// Note the parent context must ALSO be saved to persist the changes of its child.
-    private func detailSaveAction(_ context: DetailerContext<Fruit>, _ element: Fruit) {
-        guard let moc = self.childContext else {
+    private func detailSaveAction(_: DetailerContext<Fruit>, _: Fruit) {
+        guard let moc = childContext else {
             print("\(#function): child context not found")
-            //moc.rollback()
+            // moc.rollback()
             return
         }
-        
+
         do {
             if moc.hasChanges {
                 try moc.save()
@@ -392,7 +394,7 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-    
+
     private func deleteAction(_ fruit: Fruit) {
         let _fruit = get(for: fruit.id)
         guard _fruit.count > 0 else { return }
@@ -404,11 +406,11 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-    
+
     private func loadAction() {
         FruitBase.loadSampleData(viewContext)
     }
-    
+
     private func clearAction() {
         do {
             fruits.forEach { viewContext.delete($0) }
@@ -418,7 +420,7 @@ struct ContentView: View {
             print("\(#function): Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
-    
+
     private func hoverAction(fruitID: Fruit.ID, isHovered: Bool) {
         if isHovered { hovered = fruitID } else { hovered = nil }
     }
@@ -426,7 +428,7 @@ struct ContentView: View {
 
 extension ContentView {
     // MARK: - List Views
-    
+
     private var listView: some View {
         VStack {
             if headerize {
@@ -443,7 +445,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var list1View: some View {
         VStack {
             if headerize {
@@ -462,7 +464,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var listMView: some View {
         VStack {
             if headerize {
@@ -481,7 +483,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var listCView: some View {
         VStack {
             if headerize {
@@ -499,7 +501,7 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     private var list1CView: some View {
         VStack {
             if headerize {
@@ -519,7 +521,7 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     private var listMCView: some View {
         VStack {
             if headerize {
@@ -539,9 +541,9 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     // MARK: - Stack Views
-    
+
     private var stackView: some View {
         VStack {
             if headerize {
@@ -558,7 +560,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var stack1View: some View {
         VStack {
             if headerize {
@@ -577,7 +579,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var stackMView: some View {
         VStack {
             if headerize {
@@ -597,7 +599,6 @@ extension ContentView {
         }
     }
 
-    
     private var stackCView: some View {
         VStack {
             if headerize {
@@ -615,7 +616,7 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     private var stack1CView: some View {
         VStack {
             if headerize {
@@ -635,7 +636,7 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     private var stackMCView: some View {
         VStack {
             if headerize {
@@ -655,9 +656,9 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     // MARK: - Grid Views
-    
+
     private var gridView: some View {
         VStack {
             if headerize {
@@ -674,7 +675,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var gridCView: some View {
         VStack {
             if headerize {
@@ -692,7 +693,7 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     private var grid1View: some View {
         VStack {
             if headerize {
@@ -711,7 +712,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var gridMView: some View {
         VStack {
             if headerize {
@@ -730,7 +731,7 @@ extension ContentView {
             }
         }
     }
-    
+
     private var grid1CView: some View {
         VStack {
             if headerize {
@@ -750,7 +751,7 @@ extension ContentView {
         }
         .onDisappear(perform: commitAction) // auto-save any pending changes
     }
-    
+
     private var gridMCView: some View {
         VStack {
             if headerize {
@@ -777,4 +778,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
-
